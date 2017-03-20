@@ -1,0 +1,37 @@
+@import "./references/_references";
+@import "./components/icons";
+@import "./components/buttons";
+@import "./components/inputs";
+@import "./components/forms";
+@import "./common/utilities";
+@import "./common/lists";
+@import "./common/links";
+@import "./common/text";
+@import "./layout/grid";
+@import "./layout/page";
+
+* {
+	box-sizing: border-box;
+}
+
+.App {
+	display: flex;
+	flex-direction: column;
+	height: 100px; // IE hack to make max-width work
+	min-height: 100vh;
+	-webkit-font-smoothing: antialiased;
+}
+
+body {
+	margin: 0;
+	font-family: sans-serif;
+	font-size: 14px;
+	line-height: 1.42857143;
+	color: $c-body-color;
+}
+
+.page {
+	display: flex;
+	// padding: $header-height 0 0;
+	flex: 1 0 auto;
+}

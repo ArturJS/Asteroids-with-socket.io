@@ -1,0 +1,37 @@
+.btn {
+	outline: 0;
+	border-radius: 4px;
+	touch-action: manipulation;
+	cursor: pointer;
+	user-select: none;
+	background-image: none;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	margin-bottom: 0;
+	border: 1px solid $c-btn-border;
+	background-color: $c-btn-bg;
+	color: $c-btn-text;
+	padding: 6px 12px;
+}
+
+.btn-primary {
+	background-color: $c-btn-primary-bg;
+
+	&:hover {
+		background-color: $c-btn-primary-hover-bg;
+		border-color: $c-btn-primary-hover-border;
+	}
+
+	&:active:hover {
+		background-color: $c-btn-primary-hover-active-bg;
+		border-color: $c-btn-primary-hover-active-border;
+	}
+}
+
+.btn-lg {
+	padding: 10px 16px;
+	font-size: 18px;
+	line-height: 1.3333333;
+	border-radius: 6px;
+}

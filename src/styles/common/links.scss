@@ -1,0 +1,11 @@
+@import "../references/references";
+
+.link {
+	color: $c-link;
+	text-decoration: underline;
+}
+
+.unstyled-link {
+	color: $c-unstyled-link;
+	text-decoration: none;
+}

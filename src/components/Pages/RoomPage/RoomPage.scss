@@ -1,0 +1,14 @@
+@import "../../../styles/references/references";
+
+.room-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+
+  .page-title {
+    position: relative;
+    z-index: 10;
+    background-color: rgba(0,0,0,0.5);
+    color: #FFFFFF;
+  }
+}

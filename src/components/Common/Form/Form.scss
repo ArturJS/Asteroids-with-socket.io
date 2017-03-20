@@ -1,0 +1,12 @@
+@import "../../../styles/references/references";
+
+.field-error {
+	input[type=text], .form-control {
+		border-color: $c-field-error-border;
+		box-shadow: 0 0 8px $c-field-error-box-shadow;
+	}
+}
+
+.field-error-text {
+	color: $c-field-error-color;
+}

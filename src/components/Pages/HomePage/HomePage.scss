@@ -1,0 +1,30 @@
+@import "../../../styles/references/references";
+
+.home-page {
+	display: flex;
+  flex: 1 1 auto;
+	flex-direction: column;
+
+  .rooms-list {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+
+    .room-item {
+      display: flex;
+      margin: 15px 0 0;
+      overflow: hidden;
+      transition: box-shadow 0.15s linear;
+      box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+
+      &:hover {
+        box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, 0.5);
+      }
+
+      &-link {
+        padding: 15px 10px;
+        flex-grow: 1;
+      }
+    }
+  }
+}

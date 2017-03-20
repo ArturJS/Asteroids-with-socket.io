@@ -1,0 +1,53 @@
+$c-black: #000000;
+$c-white: #FFFFFF;
+$c-darksome: #555555;
+$c-gray: #BBB;
+$c-red: #FF0000;
+$c-dark-red: #A94442;
+$c-blue: #2196F3;
+$c-cloud-burst: #21314B;
+$c-mercury: #E7E7E7;
+$c-dusty-gray: #9C9C9C;
+$c-silver: #CCC;
+$c-alabasters: #FAFAFA;
+$c-drop-zone: $c-gray;
+$c-error-text: $c-dark-red;
+$c-cornflower-blue: #4F73B2;
+$c-astral: #337ab7;
+$c-azure: #2e6da4;
+$c-bay-of-many: #204D74;
+$c-st-tropaz: #286090;
+$c-elephant: #122B40;
+$c-alto: #ddd;
+$c-mine-shaft: #333333;
+$c-boulder: #777777;
+$c-green: #38bb6c;
+
+$c-field-error-border: $c-red;
+$c-field-error-color: $c-red;
+$c-field-error-box-shadow: rgba($c-red, 0.6);
+
+$c-body-color: $c-mine-shaft;
+
+$c-link: $c-azure;
+$c-unstyled-link: $c-black;
+$c-text-muted-color: $c-boulder;
+
+
+$c-input-color: $c-darksome;
+$c-input-bg: $c-white;
+$c-input-border: $c-silver;
+$c-input-bg-disabled: $c-silver;
+$c-input-border-focus: $c-blue;
+$c-input-box-shadow-inset-focus: rgba($c-black, .075);
+$c-input-box-shadow-focus: rgba($c-blue, .6);
+
+
+$c-btn-text: $c-white;
+$c-btn-bg: $c-astral;
+$c-btn-primary-bg: $c-cornflower-blue;
+$c-btn-primary-hover-bg: $c-st-tropaz;
+$c-btn-primary-hover-border: $c-bay-of-many;
+$c-btn-primary-hover-active-bg: $c-bay-of-many;
+$c-btn-primary-hover-active-border: $c-elephant;
+$c-btn-border: $c-azure;
