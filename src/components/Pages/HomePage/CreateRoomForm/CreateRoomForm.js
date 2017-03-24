@@ -27,6 +27,8 @@ export default class CreateRoomForm extends Component {
     try {
       const createdRoom = await roomApi.createRoom(values.roomName);
       this.props.roomStore.addRoom(createdRoom);
+      this.formStore.reset();
+      this.setState({errors: null});
     }
     catch (err) {
       console.dir(err);
@@ -58,7 +60,7 @@ export default class CreateRoomForm extends Component {
             placeholder="Enter room name here..."
             className="form-control"/>
         </div>
-        <ErrorSummary errors={errors} />
+        <ErrorSummary errors={errors}/>
       </Form>
     );
   }

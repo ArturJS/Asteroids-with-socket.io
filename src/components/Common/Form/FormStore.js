@@ -89,4 +89,10 @@ export default class FormStore {
     });
     return values;
   }
+
+  reset() {
+    _.forOwn(this.ctrls, (ctrl) => {
+      ctrl.value = '';
+    });
+  }
 }
