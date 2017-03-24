@@ -3,7 +3,8 @@ const _ = require('lodash');
 
 module.exports = {
 	getRooms: getRooms,
-	getRoomById: getRoomById
+	getRoomById: getRoomById,
+  createRoom: createRoom
 };
 
 ///
@@ -41,4 +42,25 @@ function getRoomById(req, res) {
   }
 
   res.status(200).json(room);
+}
+
+function createRoom(req, res) {
+  let {roomName} = req.body;
+  let room = rooms.find(room => room.name === roomName);
+
+  if (!room) {
+    const newRoom = {
+      id: shortid.generate(),
+      name: roomName
+    };
+
+    rooms.push(newRoom);
+
+    res.status(200).json(newRoom);
+    return;
+  }
+
+  res.status(400).json({
+    errors: ['Room with the same name already exists!']
+  });
 }

@@ -19,17 +19,10 @@ const routes = (
   </Route>
 );
 
-/*
- // Stores
- import  {localizationStore} from './components/Common/Localization';
- import {loadingStore} from './components/Common/Loading';
- import {modalStore} from './components/Common/ModalDialog';
- */
+import roomStore from './Stores/RoomStore';
 
 const stores = {
-  /* localizationStore,
-   loadingStore,
-   modalStore */
+  roomStore
 };
 
 const App = () => {
