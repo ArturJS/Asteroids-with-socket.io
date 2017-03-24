@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const inputTextCtrl = ({name, value, placeholder, onFocus, error, onChange, onBlur, disabled}) => {
+export const inputTextCtrl = ({name, value, placeholder, onFocus, onChange, disabled}) => {
   return (
     <input
       type="text"
@@ -11,7 +11,6 @@ export const inputTextCtrl = ({name, value, placeholder, onFocus, error, onChang
       disabled={disabled}
       className="form-control"
       onChange={onChange}
-      onBlur={onBlur}
       onFocus={onFocus}/>
   );
 };

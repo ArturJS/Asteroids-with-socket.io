@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {inject} from 'mobx-react';
-import {Form, Field, Controls, FormStore} from '../../../Common/Form';
+import {Form, Field, Controls, FormStore, Validators} from '../../../Common/Form';
 import ErrorSummary from '../../../Common/ErrorSummary';
 import {roomApi} from '../../../../api/roomApi';
 import './CreateRoomForm.scss';
@@ -14,13 +14,19 @@ export default class CreateRoomForm extends Component {
   componentWillMount() {
     this.formStore = new FormStore({
       roomName: {
-        value: ''
+        value: '',
+        validators: [
+          Validators.required('Room name is required')
+        ]
       }
     });
   }
 
   onSubmit = (async(e) => {
     e.preventDefault();
+
+    const {valid} = this.formStore.validate();
+    if (!valid) return false;
 
     const values = this.formStore.getValues();
 
@@ -58,7 +64,7 @@ export default class CreateRoomForm extends Component {
             name="roomName"
             control={inputTextCtrl}
             placeholder="Enter room name here..."
-            className="form-control"/>
+            className="control-field"/>
         </div>
         <ErrorSummary errors={errors}/>
       </Form>
