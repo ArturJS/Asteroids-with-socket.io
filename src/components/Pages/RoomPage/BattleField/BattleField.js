@@ -44,20 +44,21 @@ export default class BattleField extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('keyup', this.handleKeys.bind(this, false));
-    window.addEventListener('keydown', this.handleKeys.bind(this, true));
+    window.addEventListener('keyup', this.handleKeyUp);
+    window.addEventListener('keydown', this.handleKeyDown);
 
     const context = this.canvas.getContext('2d');
     this.setState({context});
     this.startGame();
-    requestAnimationFrame(() => {
+    this.frameId = requestAnimationFrame(() => {
       this.update();
     });
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keyup', this.handleKeys);
-    window.removeEventListener('keydown', this.handleKeys);
+    window.removeEventListener('keyup', this.handleKeyUp);
+    window.removeEventListener('keydown', this.handleKeyDown);
+    cancelAnimationFrame(this.frameId);
   }
 
   handleKeys(value, e) {
@@ -70,6 +71,9 @@ export default class BattleField extends Component {
       keys
     });
   }
+
+  handleKeyUp = this.handleKeys.bind(this, false);
+  handleKeyDown = this.handleKeys.bind(this, false);
 
   update() {
     const context = this.state.context;
@@ -103,7 +107,7 @@ export default class BattleField extends Component {
     context.restore();
 
     // Next frame
-    requestAnimationFrame(() => {
+    this.frameId = requestAnimationFrame(() => {
       this.update();
     });
   }
