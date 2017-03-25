@@ -17,7 +17,14 @@ export default class CreateRoomForm extends Component {
         value: '',
         validators: [
           Validators.required('Room name is required')
-        ]
+        ],
+        onChanged: () => {
+          if (this.state.errors) {
+            this.setState({
+              errors: null
+            });
+          }
+        }
       }
     });
   }
@@ -55,7 +62,7 @@ export default class CreateRoomForm extends Component {
         store={this.formStore}
         onSubmit={this.onSubmit}
         className="create-room-form">
-        <h4 className="page-title">Create new room</h4>
+        <h4 className="form-title">Create new room</h4>
         <div className="form-group">
           <label htmlFor="roomName" className="control-label">
             Room name:

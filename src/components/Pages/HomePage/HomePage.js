@@ -17,17 +17,19 @@ export default class HomePage extends Component {
 
     return (
       <div className="home-page">
-        <h2 className="page-title">Battle rooms</h2>
-        <CreateRoomForm />
-        <ul className="rooms-list list-unstyled">
-          {rooms.map(room => (
-            <li key={room.id} className="room-item">
-              <Link to={`room/${room.id}`} className="unstyled-link room-item-link">
-                {room.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="page-content">
+          <h2 className="page-title">Battle rooms</h2>
+          <CreateRoomForm />
+          <ul className="rooms-list list-unstyled">
+            {rooms.map(room => (
+              <li key={room.id} className="room-item">
+                <Link to={`room/${room.id}`} className="unstyled-link room-item-link">
+                  {room.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     );
   }

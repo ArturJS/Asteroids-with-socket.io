@@ -10,11 +10,10 @@
 
 	.control-label {
 		width: 100%;
-		padding-left: 15px;
 		font-weight: 700;
 
 		@media (min-width: $tablet-width) {
-			width: 17%;
+			width: auto;
 			padding-top: 5px;
 			margin-bottom: 0;
 			text-align: right;
@@ -22,7 +21,10 @@
 	}
 	.control-field {
 		flex-grow: 1;
-		margin-left: 15px;
+
+    @media (min-width: $tablet-width) {
+      margin-left: 15px;
+    }
 	}
 }
 

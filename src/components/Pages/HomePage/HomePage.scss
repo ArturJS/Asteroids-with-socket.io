@@ -5,20 +5,24 @@
   flex: 1 1 auto;
 	flex-direction: column;
 
-  .rooms-list {
+  .page-content {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .rooms-list {
 
     .room-item {
       display: flex;
       margin: 15px 0 0;
       overflow: hidden;
       transition: box-shadow 0.15s linear;
-      box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 
       &:hover {
-        box-shadow: 1px 1px 10px 1px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
       }
 
       &-link {
