@@ -1,5 +1,5 @@
-const shortid = require('shortid');
 const _ = require('lodash');
+const roomsStorage = require('../storages/rooms.storage.js');
 
 module.exports = {
 	getRooms: getRooms,
@@ -9,29 +9,17 @@ module.exports = {
 
 ///
 
-let rooms = [
-  {
-    id: shortid.generate(),
-    name: 'room1'
-  },
-  {
-    id: shortid.generate(),
-    name: 'room2'
-  },
-  {
-    id: shortid.generate(),
-    name: 'room3'
-  }
-];
-
 
 function getRooms(req, res) {
-  res.status(200).json(rooms.map(room => _.pick(room, ['id', 'name'])));
+  res.status(200).json(
+    roomsStorage.getRooms()
+      .map(room => _.pick(room, ['id', 'name']))
+  );
 }
 
 function getRoomById(req, res) {
   let {roomId} = req.params;
-  let room = rooms.find(room => room.id === roomId);
+  let room = roomsStorage.getRoomById(roomId);
 
   if (!room) {
     res.status(404).json({
@@ -47,21 +35,14 @@ function getRoomById(req, res) {
 
 function createRoom(req, res) {
   let {roomName} = req.body;
-  let room = rooms.find(room => room.name === roomName);
+  let createdRoom = roomsStorage.createRoom(roomName);
 
-  if (!room) {
-    const newRoom = {
-      id: shortid.generate(),
-      name: roomName
-    };
-
-    rooms.push(newRoom);
-
-    res.status(200).json(newRoom);
+  if (!createdRoom) {
+    res.status(400).json({
+      errors: ['Room with the same name already exists!']
+    });
     return;
   }
 
-  res.status(400).json({
-    errors: ['Room with the same name already exists!']
-  });
+  res.status(200).json(createdRoom);
 }
