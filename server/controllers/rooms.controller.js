@@ -24,6 +24,7 @@ let rooms = [
   }
 ];
 
+
 function getRooms(req, res) {
   res.status(200).json(rooms.map(room => _.pick(room, ['id', 'name'])));
 }

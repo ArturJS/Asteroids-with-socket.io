@@ -15,7 +15,6 @@ const noCacheMiddleware = require(`${serverPrefixPath}middlewares/no-cache.midle
 // import routes
 const apiRoute = require(`${serverPrefixPath}routes/api.route.js`);
 
-
 // init parsers
 app.use(bodyParser.urlencoded({limit: '25mb', extended: false }));
 app.use(bodyParser.json({limit: '25mb'}));
@@ -26,7 +25,6 @@ app.use(noCacheMiddleware);
 
 // init routes
 app.use('/api', apiRoute);
-
 
 
 
