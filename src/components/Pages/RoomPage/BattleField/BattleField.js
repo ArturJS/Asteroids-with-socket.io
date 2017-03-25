@@ -41,6 +41,9 @@ export default class BattleField extends Component {
     this.asteroids = [];
     this.bullets = [];
     this.particles = [];
+
+    this.handleKeyUp = this.handleKeys.bind(this, false);
+    this.handleKeyDown = this.handleKeys.bind(this, true);
   }
 
   componentDidMount() {
@@ -71,9 +74,6 @@ export default class BattleField extends Component {
       keys
     });
   }
-
-  handleKeyUp = this.handleKeys.bind(this, false);
-  handleKeyDown = this.handleKeys.bind(this, false);
 
   update() {
     const context = this.state.context;
