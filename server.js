@@ -44,6 +44,11 @@ io.sockets.on('connection', (socket) => {
 
   socketList.push(socket);
 
+  socket.emit('updateBattleField', {
+    position: position,
+    rotation: rotation
+  });
+
   socket.on('keyUpdate', updateKeys);
 
 
@@ -62,17 +67,38 @@ console.log(`NODE_API listening on http://localhost:${port}/`);
 
 // todo move into separate controller
 
+let prevBattleFieldData = {};
+
 function runGameCircle() {
   setInterval(() => {
     updateShipData(keys); // todo update particular shipData
 
-    _.each(socketList, (socket) => {
-      socket.emit('updateBattleField', {
-        position: position,
-        rotation: rotation
+    let nextBattleFieldData = {
+      position: {
+        x: position.x,
+        y: position.y
+      },
+      rotation: rotation
+    };
+
+    if (isNotEqual(prevBattleFieldData, nextBattleFieldData)) {
+      _.each(socketList, (socket) => {
+        socket.emit('updateBattleField', {
+          position: position,
+          rotation: rotation
+        });
       });
-    });
+    }
+
+    prevBattleFieldData = nextBattleFieldData;
+
   }, 1000 / 60);
+}
+
+function isNotEqual(data1, data2) {
+  return data1.rotation !== data2.rotation ||
+    Math.floor(data1.position.x) !== Math.floor(data2.position.x) ||
+    Math.floor(data1.position.y) !== Math.floor(data2.position.y);
 }
 
 function updateKeys(newKeys) {
