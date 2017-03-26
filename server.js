@@ -16,7 +16,7 @@ const noCacheMiddleware = require(`${serverPrefixPath}middlewares/no-cache.midle
 const apiRoute = require(`${serverPrefixPath}routes/api.route.js`);
 
 // init parsers
-app.use(bodyParser.urlencoded({limit: '25mb', extended: false }));
+app.use(bodyParser.urlencoded({limit: '25mb', extended: false}));
 app.use(bodyParser.json({limit: '25mb'}));
 
 // init middlewares
@@ -27,84 +27,121 @@ app.use(noCacheMiddleware);
 app.use('/api', apiRoute);
 
 
-
 //==========Socket.IO===========
+const _ = require('lodash');
 
-// usernames which are currently connected to the chat
-let usernames = {};
-// rooms which are currently available in chat
-let rooms = ['room1','room2','room3'];
+let socketList = [];
+let keys = {
+  left: 0,
+  right: 0,
+  up: 0,
+  space: 0
+};
 
-let roomsHistory = {};
+io.sockets.on('connection', (socket) => {
+  socket.room = 'room1';
+  socket.join(socket.room);
 
-io.sockets.on('connection', function (socket) {
+  socketList.push(socket);
 
-  // when the client emits 'adduser', this listens and executes
-  socket.on('adduser', function(username){
-    // store the username in the socket session for this client
-    socket.username = username;
-    // store the room name in the socket session for this client
-    socket.room = 'room1';
-    // add the client's username to the global list
-    usernames[username] = username;
-    // send client to room 1
-    socket.join('room1');
-    // echo to client they've connected
-    socket.emit('updatechat', 'SERVER', 'you have connected to room1');
-    // echo to room 1 that a person has connected to their room
-    socket.broadcast.to('room1').emit('updatechat', 'SERVER', username + ' has connected to this room');
-    socket.emit('updaterooms', rooms, 'room1');
-  });
+  socket.on('keyUpdate', updateKeys);
 
-  // when the client emits 'sendchat', this listens and executes
-  socket.on('sendchat', function (data) {
-    // we tell the client to execute 'updatechat' with 2 parameters
-    io.sockets.in(socket.room).emit('updatechat', socket.username, data);
 
-    if (!roomsHistory[socket.room]) {
-      roomsHistory[socket.room] = [];
-    }
-    else {
-      roomsHistory[socket.room].push({
-        userName: socket.username,
-        data: data
-      })
-    }
-  });
-
-  socket.on('switchRoom', function(newroom){
-    // leave the current room (stored in session)
-    socket.leave(socket.room);
-    // join new room, received as function parameter
-    socket.join(newroom);
-
-    if (!roomsHistory[newroom]) {
-      roomsHistory[newroom] = [];
-    }
-
-    socket.emit('updatechat', 'SERVER', roomsHistory[newroom]);
-    // sent message to OLD room
-    socket.broadcast.to(socket.room).emit('updatechat', 'SERVER', socket.username+' has left this room');
-    // update socket session room title
-    socket.room = newroom;
-    socket.broadcast.to(newroom).emit('updatechat', 'SERVER', socket.username+' has joined this room');
-    socket.emit('updaterooms', rooms, newroom);
-  });
-
-  // when the user disconnects.. perform this
-  socket.on('disconnect', function(){
-    // remove the username from global usernames list
-    delete usernames[socket.username];
-    // update list of users in chat, client-side
-    io.sockets.emit('updateusers', usernames);
-    // echo globally that this client has left
-    socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
-    socket.leave(socket.room);
+  socket.on('disconnect', () => {
+    _.remove(socketList, (item) => item === socket);
   });
 });
 
-http.listen(port, function(){
+http.listen(port, () => {
   console.log('listening on *:' + port);
+  runGameCircle();
 });
 
 console.log(`NODE_API listening on http://localhost:${port}/`);
+
+
+// todo move into separate controller
+
+function runGameCircle() {
+  setInterval(() => {
+    updateShipData(keys); // todo update particular shipData
+
+    _.each(socketList, (socket) => {
+      socket.emit('updateBattleField', {
+        position: position,
+        rotation: rotation
+      });
+    });
+  }, 1000 / 60);
+}
+
+function updateKeys(newKeys) {
+  keys = newKeys;
+}
+
+/// Ship
+const screen = {
+  width: 900,
+  height: 600
+};
+
+let position = {
+  x: 450,
+  y: 300
+};
+let rotation = 0;
+
+let velocity = {
+  x: 0,
+  y: 0
+};
+
+let rotationSpeed = 6;
+let speed = 0.15;
+let inertia = 0.99;
+
+function updateShipData(keys) {
+  if (keys.up) {
+    accelerate();
+  }
+  if (keys.left) {
+    rotate('LEFT');
+  }
+  if (keys.right) {
+    rotate('RIGHT');
+  }
+
+  // Move (server.js)
+  position.x += velocity.x;
+  position.y += velocity.y;
+  velocity.x *= inertia;
+  velocity.y *= inertia;
+
+  // Rotation (server.js)
+  if (rotation >= 360) {
+    rotation -= 360;
+  }
+  if (rotation < 0) {
+    rotation += 360;
+  }
+
+  // Screen edges (server.js)
+  if (position.x > screen.width) position.x = 0;
+  else if (position.x < 0) position.x = screen.width;
+  if (position.y > screen.height) position.y = 0;
+  else if (position.y < 0) position.y = screen.height;
+}
+
+function rotate(dir) {
+  if (dir === 'LEFT') {
+    rotation -= rotationSpeed;
+  }
+  if (dir === 'RIGHT') {
+    rotation += rotationSpeed;
+  }
+}
+
+function accelerate() {
+  velocity.x -= Math.sin(-rotation * Math.PI / 180) * speed;
+  velocity.y -= Math.cos(-rotation * Math.PI / 180) * speed;
+}
