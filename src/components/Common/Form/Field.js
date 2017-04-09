@@ -43,6 +43,7 @@ export default class Field extends Component {
     if (ctrl.asyncValidators.length) {
       this.context.store.asyncValidateCtrl(this.props.name);
     }
+    ctrl.onBlured(ctrl, this.context.store.ctrls);
   };
 
   onFocus = () => {

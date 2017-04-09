@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const inputTextCtrl = ({name, value, placeholder, onFocus, onChange, disabled, autoComplete = 'off'}) => {
+export const inputTextCtrl = ({name, value, placeholder, onFocus, onBlur, onChange, disabled, autoComplete = 'off'}) => {
   return (
     <input
       type="text"
@@ -12,6 +12,7 @@ export const inputTextCtrl = ({name, value, placeholder, onFocus, onChange, disa
       autoComplete={autoComplete}
       className="form-control"
       onChange={onChange}
-      onFocus={onFocus}/>
+      onFocus={onFocus}
+      onBlur={onBlur}/>
   );
 };

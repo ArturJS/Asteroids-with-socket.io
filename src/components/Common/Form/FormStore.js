@@ -8,12 +8,14 @@ export default class FormStore {
     let ctrls = {...controls};
     _.forOwn(ctrls, (ctrl, name) => {
       ctrl.error = null;
+      ctrl.touched = false;
       ctrl.validators = ctrl.validators || [];
       ctrl.asyncValidators = ctrl.asyncValidators || [];
       ctrl.transform = ctrl.transform || (v => v);
       ctrl.onFocusTransform = ctrl.onFocusTransform || (v => v);
       ctrl.onBlurTransform = ctrl.onBlurTransform || (v => v);
       ctrl.onChanged = ctrl.onChanged || _.noop;
+      ctrl.onBlured = ctrl.onBlured || _.noop;
     });
     this.ctrls = observable(ctrls);
   }

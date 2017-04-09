@@ -24,6 +24,9 @@ export default class CreateRoomForm extends Component {
               errors: null
             });
           }
+        },
+        onBlured: (ctrl) => {
+          ctrl.error = null;
         }
       }
     });

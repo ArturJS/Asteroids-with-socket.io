@@ -40,7 +40,7 @@ function _initGame() {
       _.each(socketList, (socket) => {
         socket.emit('updateBattleField', battleFieldData);
       });
-    })
+    });
 }
 
 function _updateKeys(keys) {
