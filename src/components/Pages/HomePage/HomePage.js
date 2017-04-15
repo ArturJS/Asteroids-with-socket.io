@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
 import {Link} from 'react-router';
-import {homeApi} from '../../../api/homeApi';
+import homeApi from '../../../api/homeApi';
+import loginApi from '../../../api/loginApi';
 import CreateRoomForm from './CreateRoomForm';
 import './HomePage.scss';
 
@@ -10,6 +11,14 @@ import './HomePage.scss';
 export default class HomePage extends Component {
   async componentDidMount() {
     this.props.roomStore.replaceRooms(await homeApi.getRooms());
+
+    // todo use custom modalDialog
+    // todo add header with login and logout
+    let login = prompt('Please enter your nickname');
+
+    if (login) {
+      loginApi.doSignIn(login);
+    }
   }
 
   render() {

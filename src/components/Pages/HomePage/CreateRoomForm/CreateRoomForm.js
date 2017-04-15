@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {inject} from 'mobx-react';
 import {Form, Field, Controls, FormStore, Validators} from '../../../Common/Form';
 import ErrorSummary from '../../../Common/ErrorSummary';
-import {roomApi} from '../../../../api/roomApi';
+import roomApi from '../../../../api/roomApi';
 import './CreateRoomForm.scss';
 
 @inject('roomStore')
@@ -47,8 +47,11 @@ export default class CreateRoomForm extends Component {
       this.setState({errors: null});
     }
     catch (err) {
-      console.dir(err);
-      if (err.response && err.response.status === 400) {
+      if (
+        err.response &&
+        err.response.status >= 400 &&
+        err.response.status < 500
+      ) {
         this.setState({
           errors: err.response.data.errors
         });

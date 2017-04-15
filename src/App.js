@@ -19,10 +19,14 @@ const routes = (
   </Route>
 );
 
-import roomStore from './Stores/RoomStore';
+import {
+  roomStore,
+  userStore
+} from './Stores';
 
 const stores = {
-  roomStore
+  roomStore,
+  userStore
 };
 
 const App = () => {

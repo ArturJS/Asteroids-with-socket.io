@@ -1,6 +1,6 @@
 import baseApi from './baseApi';
 
-export const homeApi = {
+const homeApi = {
   getRooms() {
     return baseApi.ajax({
       method: 'get',
@@ -16,3 +16,5 @@ export const homeApi = {
       });
   }
 };
+
+export default homeApi;

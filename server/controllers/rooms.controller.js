@@ -1,14 +1,14 @@
 const _ = require('lodash');
 const roomsStorage = require('../storages/rooms.storage.js');
+const authDecorator = require('../utils/auth.decorator.js');
 
 module.exports = {
-	getRooms: getRooms,
-	getRoomById: getRoomById,
-  createRoom: createRoom
+	getRooms,
+	getRoomById,
+  createRoom: authDecorator(createRoom)
 };
 
 ///
-
 
 function getRooms(req, res) {
   res.status(200).json(

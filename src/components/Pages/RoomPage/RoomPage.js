@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import io from 'socket.io-client';
-import {roomApi} from '../../../api/roomApi';
+import roomApi from '../../../api/roomApi';
 import BattleField from './BattleField';
 import './RoomPage.scss';
 

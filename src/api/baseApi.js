@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {config} from './apiConfig';
+import config from './apiConfig';
 
 const baseApi = {
   ajax(request) {

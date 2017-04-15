@@ -10,7 +10,7 @@ const serverPrefixPath = './server/';
 
 // import middlewares
 const corsMiddleware = require(`${serverPrefixPath}middlewares/cors.middleware.js`);
-const noCacheMiddleware = require(`${serverPrefixPath}middlewares/no-cache.midleware.js`);
+const noCacheMiddleware = require(`${serverPrefixPath}middlewares/no-cache.middleware.js`);
 
 // import routes
 const apiRoute = require(`${serverPrefixPath}routes/api.route.js`);

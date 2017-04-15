@@ -1,6 +1,6 @@
 import baseApi from './baseApi';
 
-export const roomApi = {
+const roomApi = {
   getRoomById(roomId) {
     return baseApi.ajax({
       method: 'get',
@@ -27,3 +27,5 @@ export const roomApi = {
       }));
   }
 };
+
+export default roomApi;
