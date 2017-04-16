@@ -1,0 +1,109 @@
+@import "./../../../styles/references/references";
+
+.modal {
+	$c-modal-color: $c-white;
+	$c-modal-bg: $c-white;
+	$c-modal-border: $c-gray;
+	$c-modal-header-info-bg: $c-blue;
+	$c-modal-header-bg: $c-blue;
+	$c-modal-header-error-bg: $c-red;
+	$c-modal-header-info-text: $c-white;
+	$c-modal-header-error-text: $c-white;
+	$c-modal-content-border: $c-dusty-gray;
+	$c-modal-shadow: $c-boulder;
+
+	outline: 0;
+
+	.modal-dialog {
+		pointer-events: auto;
+		position: relative;
+		width: auto;
+		margin: 10px;
+		@media (min-width: $tablet-width) {
+			padding-top: 10%;
+			display: flex;
+			justify-content: center;
+		}
+	}
+
+	.modal-content {
+		background-color: $c-modal-bg;
+		border: 1px solid $c-modal-content-border;
+		box-shadow: 0 3px 9px $c-modal-shadow;
+		position: relative;
+		outline: 0;
+		background-clip: padding-box;
+
+		@media (min-width: $tablet-width) {
+			box-shadow: 0 5px 15px $c-modal-shadow;
+		}
+	}
+
+	.modal-header {
+		padding: 15px;
+		border-bottom: 1px solid $c-modal-border;
+		background-color: $c-modal-header-bg;
+		color: $c-modal-color;
+	}
+
+	&-info {
+		.modal-header {
+			background-color: $c-modal-header-info-bg;
+			color: $c-modal-header-info-text;
+		}
+	}
+
+	&-error {
+		.modal-header {
+			background-color: $c-modal-header-error-bg;
+			color: $c-modal-header-error-text;
+		}
+	}
+
+	.modal-title {
+		font-size: 24px;
+		font-weight: 300;
+		margin: 0;
+		line-height: 1.42857143;
+	}
+
+	.close {
+		color: $c-modal-color;
+		margin: 0;
+		padding: 0;
+		cursor: pointer;
+		background: 0 0;
+		border: 0;
+		float: right;
+		font-size: 21px;
+		font-weight: 700;
+		line-height: 1;
+		opacity: 0.7;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	.modal-body {
+		position: relative;
+		padding: 15px;
+	}
+
+	.modal-footer {
+		border-top: 1px solid $c-modal-border;
+		padding: 15px;
+		text-align: right;
+		.btn {
+			margin-right: 10px;
+		}
+		.btn:last-child {
+			margin-right: 0;
+		}
+	}
+}
+
+.ReactModal__Overlay {
+	z-index: 1080;
+	overflow-y: scroll;
+}

@@ -1,0 +1,49 @@
+@import '../../../styles/references/_references';
+
+.header {
+	$c-header-bg: $c-desert-storm;
+	$c-header-border: $c-quill-gray;
+  $header-height: 40px;
+
+	margin-bottom: 20px;
+	border-bottom: 3px solid $c-header-border;
+	display: block;
+
+	.navbar-header {
+    display: flex;
+		width: 80%;
+		margin: 0 auto;
+		padding-left: 15px;
+
+    .user-auth-state {
+      margin-left: auto;
+    }
+	}
+
+	.container {
+		padding: 0 15px;
+	}
+
+	.navbar-brand {
+		padding: 20px 0 0;
+		height: $header-height;
+		display: inline-block;
+	}
+
+	&.navbar-fixed-top {
+		position: fixed;
+		top: 0;
+		right: 0;
+		left: 0;
+		z-index: 1030;
+	}
+	&.navbar {
+		height: $header-height;
+	}
+	&.navbar-default {
+		background-color: $c-header-bg;
+	}
+	.navbar-left {
+		display: inline-block;
+	}
+}

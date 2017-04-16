@@ -23,10 +23,12 @@ import {
   roomStore,
   userStore
 } from './Stores';
+import {modalStore} from './components/Common/ModalDialog';
 
 const stores = {
   roomStore,
-  userStore
+  userStore,
+  modalStore
 };
 
 const App = () => {

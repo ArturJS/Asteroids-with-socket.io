@@ -1,0 +1,17 @@
+@import "../../../../styles/references/references";
+
+.login-modal {
+	margin: 10px;
+
+	@media (min-width: $tablet-width) {
+		width: 350px;
+	}
+
+	.control-label {
+		margin-bottom: 0;
+	}
+
+	.error-summary {
+		margin-top: 0;
+	}
+}

@@ -2,22 +2,18 @@ import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
 import {Link} from 'react-router';
 import homeApi from '../../../api/homeApi';
-import loginApi from '../../../api/loginApi';
 import CreateRoomForm from './CreateRoomForm';
+import LoginModal from '../../Common/Modals/LoginModal';
 import './HomePage.scss';
 
-@inject('roomStore')
+@inject('roomStore', 'modalStore', 'userStore')
 @observer
 export default class HomePage extends Component {
   async componentDidMount() {
     this.props.roomStore.replaceRooms(await homeApi.getRooms());
 
-    // todo use custom modalDialog
-    // todo add header with login and logout
-    let login = prompt('Please enter your nickname');
-
-    if (login) {
-      loginApi.doSignIn(login);
+    if (!this.props.userStore.isLoggedIn) {
+      this.props.modalStore.showCustom('Login', <LoginModal/>);
     }
   }
 
