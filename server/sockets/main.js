@@ -1,5 +1,7 @@
 const gameEngine = require('./game/engine.js');
 const _ = require('lodash');
+const socketioJwt = require("socketio-jwt");
+const jwtSecret = require('../config/config.js').jwtSecret;
 
 module.exports = {
   init
@@ -10,6 +12,11 @@ module.exports = {
 let socketList = [];
 
 function init(io) {
+
+  io.use(socketioJwt.authorize({
+    secret: jwtSecret,
+    handshake: true
+  }));
 
   io.sockets.on('connection', (socket) => {
     socket.room = 'room1';

@@ -3,18 +3,13 @@ import {inject, observer} from 'mobx-react';
 import {Link} from 'react-router';
 import homeApi from '../../../api/homeApi';
 import CreateRoomForm from './CreateRoomForm';
-import LoginModal from '../../Common/Modals/LoginModal';
 import './HomePage.scss';
 
-@inject('roomStore', 'modalStore', 'userStore')
+@inject('roomStore')
 @observer
 export default class HomePage extends Component {
   async componentDidMount() {
     this.props.roomStore.replaceRooms(await homeApi.getRooms());
-
-    if (!this.props.userStore.isLoggedIn) {
-      this.props.modalStore.showCustom('Login', <LoginModal/>);
-    }
   }
 
   render() {

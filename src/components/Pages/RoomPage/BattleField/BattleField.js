@@ -126,7 +126,7 @@ export default class BattleField extends Component {
     const {width, height, ratio} = this.state.screen;
 
     return (
-      <div>
+      <div className="battle-field">
         <canvas ref={node => {
           this.canvas = node;
         }}
