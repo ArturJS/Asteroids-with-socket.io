@@ -1,6 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import _ from 'lodash';
-import Ship from './entities/Ship';
+import renderShip from './renderers/ShipRenderer';
 import './BattleField.scss';
 
 /*eslint-disable */
@@ -38,8 +38,6 @@ export default class BattleField extends Component {
       space: 0
     };
 
-    this.ship = [];
-
     this.handleKeyUp = this.handleKeys.bind(this, false);
     this.handleKeyDown = this.handleKeys.bind(this, true);
   }
@@ -51,12 +49,17 @@ export default class BattleField extends Component {
     const context = this.canvas.getContext('2d');
     this.setState({context});
 
-    this.startGame();
-
-    this.props.socket.on('updateBattleField', ({position, rotation}) => {
+    this.props.socket.on('updateBattleField', ({userShipMap}) => {
       this.update({
-        position,
-        rotation,
+        userShipMap: _.mapValues(userShipMap, ({position, rotation}) => {
+          return {
+            position: {
+              x: position.x,
+              y: position.y
+            },
+            rotation
+          };
+        }),
         context
       });
     });
@@ -90,35 +93,15 @@ export default class BattleField extends Component {
     context.globalAlpha = 1;
 
     // Remove or render
-    this.updateObjects(this.ship, 'ship', battleFieldData);
+    this.updateObjects(battleFieldData);
 
     context.restore();
   }
 
-  startGame() {
-    let ship = new Ship({
-      position: {
-        x: this.state.screen.width / 2,
-        y: this.state.screen.height / 2
-      },
-      rotation: 0,
-      context: this.state.context
-    });
-    this.createObject(ship, 'ship');
-  }
-
-  createObject(item, group) {
-    this[group].push(item);
-  }
-
-  updateObjects(items, group, battleFieldData) {
-    _.each(items, (item, index) => {
-      if (item.delete) {
-        this[group].splice(index, 1);
-      }
-      else {
-        items[index].update(battleFieldData);
-      }
+  updateObjects({userShipMap}) {
+    const {context} = this.state;
+    _.each(userShipMap, (shipData) => {
+      renderShip(shipData, context);
     });
   }
 

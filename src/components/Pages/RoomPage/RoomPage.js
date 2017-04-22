@@ -8,8 +8,7 @@ import './RoomPage.scss';
 @inject('userStore')
 export default class RoomPage extends Component {
   state = {
-    room: {},
-    isConnected: false
+    room: {}
   };
 
   componentWillMount() {
@@ -24,10 +23,6 @@ export default class RoomPage extends Component {
   componentDidMount() {
     roomApi.getRoomById(this.props.params.roomId)
       .then(room => this.setState({room}));
-
-    this.socket.on('connect', () => {
-      this.setState({isConnected: true});
-    });
   }
 
   componentWillUnmount() {
@@ -35,12 +30,11 @@ export default class RoomPage extends Component {
   }
 
   render() {
-    const {isConnected, room} = this.state;
+    const {room} = this.state;
 
     return (
       <div className="room-page">
         <h2 className="page-title">{room.name}</h2>
-        {isConnected && <b>Connected</b>}
         <BattleField socket={this.socket} />
       </div>
     );

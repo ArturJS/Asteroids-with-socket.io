@@ -19,10 +19,11 @@ function init(io) {
   }));
 
   io.sockets.on('connection', (socket) => {
-    
-    socket.roomId = socket.handshake.query.roomId;
+    const {roomId} = socket.handshake.query;
+    const {userId} = socket.decoded_token;
 
-    socket.join(socket.roomId);
+    socket.join(roomId);
+    gameEngine.addShip(userId);
 
     socketList.push(socket);
 
@@ -30,10 +31,11 @@ function init(io) {
       gameEngine.getBattleFieldSnapshot()
     );
 
-    socket.on('keyUpdate', _updateKeys);
+    socket.on('keyUpdate', _updateKeys(userId));
 
     socket.on('disconnect', () => {
       _.remove(socketList, (item) => item === socket);
+      gameEngine.removeShip(userId);
     });
   });
 
@@ -52,6 +54,8 @@ function _initGame() {
     });
 }
 
-function _updateKeys(keys) {
-  gameEngine.updateKeys(keys);
+function _updateKeys(userId) {
+  return (keys) => {
+    gameEngine.updateKeys(userId, keys);
+  };
 }

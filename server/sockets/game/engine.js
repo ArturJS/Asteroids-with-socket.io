@@ -5,17 +5,12 @@ const Ship = require('./entities/Ship.js');
 module.exports = {
   runGameCircle,
   updateKeys,
+  addShip,
+  removeShip,
   getBattleFieldSnapshot
 };
 
 ///
-
-let keys = {
-  left: 0,
-  right: 0,
-  up: 0,
-  space: 0
-};
 
 const SCREEN = {
   width: 900,
@@ -26,27 +21,32 @@ const ROTATION_SPEED = 6;
 const SPEED = 0.15;
 const INERTIA = 0.99;
 
+let userKeysMap = {};
+
+let userShipMap = {};
+
 let prevBattleFieldData = {};
 
 function runGameCircle() {
   const eventEmitter = new events.EventEmitter();
-  let ship = new Ship();
 
   setInterval(() => {
-    ship.update(
-      _updateShipData(keys, ship.get(), {
-        SCREEN,
-        ROTATION_SPEED,
-        SPEED,
-        INERTIA
-      })
-    );
-
-    let nextBattleFieldData = ship.get();
-
-    if (_isNotEqual(prevBattleFieldData, nextBattleFieldData)) {
-      eventEmitter.emit('updateBattleField', nextBattleFieldData);
+    for (let [userId, ship] of _.entries(userShipMap)) {
+      ship.update(
+        _updateShipData(userKeysMap[userId], ship.get(), {
+          SCREEN,
+          ROTATION_SPEED,
+          SPEED,
+          INERTIA
+        })
+      );
     }
+
+    let nextBattleFieldData = {
+      userShipMap: _.mapValues(userShipMap, ship => ship.get())
+    };
+
+    eventEmitter.emit('updateBattleField', nextBattleFieldData);
 
     prevBattleFieldData = nextBattleFieldData;
 
@@ -55,8 +55,23 @@ function runGameCircle() {
   return eventEmitter;
 }
 
-function updateKeys(newKeys) {
-  keys = newKeys;
+function updateKeys(userId, keys) {
+  userKeysMap[userId] = keys;
+}
+
+function addShip(userId) {
+  userShipMap[userId] = new Ship();
+  userKeysMap[userId] = {
+    left: 0,
+    right: 0,
+    up: 0,
+    space: 0
+  };
+}
+
+function removeShip(userId) {
+  delete userShipMap[userId];
+  delete userKeysMap[userId];
 }
 
 function getBattleFieldSnapshot() {
@@ -64,12 +79,6 @@ function getBattleFieldSnapshot() {
 }
 
 /// private methods
-
-function _isNotEqual(data1, data2) {
-  return data1.rotation !== data2.rotation ||
-    Math.floor(data1.position.x) !== Math.floor(data2.position.x) ||
-    Math.floor(data1.position.y) !== Math.floor(data2.position.y);
-}
 
 
 function _updateShipData(keys, shipData, params) {
