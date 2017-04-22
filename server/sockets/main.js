@@ -19,8 +19,10 @@ function init(io) {
   }));
 
   io.sockets.on('connection', (socket) => {
-    socket.room = 'room1';
-    socket.join(socket.room);
+    
+    socket.roomId = socket.handshake.query.roomId;
+
+    socket.join(socket.roomId);
 
     socketList.push(socket);
 

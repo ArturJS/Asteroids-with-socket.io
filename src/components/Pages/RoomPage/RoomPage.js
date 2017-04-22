@@ -14,9 +14,10 @@ export default class RoomPage extends Component {
 
   componentWillMount() {
     const {authToken} = this.props.userStore.getUserData();
+    const {roomId} = this.props.params;
 
     this.socket = io('http://localhost:3333', {
-      'query': `token=${authToken}`
+      'query': `token=${authToken}&roomId=${roomId}`
     });
   }
 
@@ -27,6 +28,10 @@ export default class RoomPage extends Component {
     this.socket.on('connect', () => {
       this.setState({isConnected: true});
     });
+  }
+
+  componentWillUnmount() {
+    this.socket.disconnect();
   }
 
   render() {
