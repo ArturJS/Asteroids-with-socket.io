@@ -1,6 +1,7 @@
 const events = require('events');
 const _ = require('lodash');
 const Ship = require('./entities/Ship.js');
+const Bullet = require('./entities/Bullet.js');
 
 module.exports = {
   runGameCircle,
@@ -21,65 +22,122 @@ const ROTATION_SPEED = 6;
 const SPEED = 0.15;
 const INERTIA = 0.99;
 
-let userKeysMap = {};
+let playerDataMap = {};
 
-let userShipMap = {};
-
-let prevBattleFieldData = {};
+let battleFieldData = {};
 
 function runGameCircle() {
   const eventEmitter = new events.EventEmitter();
 
   setInterval(() => {
-    for (let [userId, ship] of _.entries(userShipMap)) {
+    let playerDataList = _.values(playerDataMap);
+
+    _.each(playerDataList, (playerData) => {
+      let {
+        ship,
+        keys
+      } = playerData;
+
       ship.update(
-        _updateShipData(userKeysMap[userId], ship.get(), {
+        _updateShipData(keys, ship.get(), {
           SCREEN,
           ROTATION_SPEED,
           SPEED,
           INERTIA
         })
       );
-    }
 
-    let nextBattleFieldData = {
-      userShipMap: _.mapValues(userShipMap, ship => ship.get())
-    };
+      let {
+        position,
+        rotation
+      } = ship.get();
+
+      // todo make it pure function
+      _updateBulletsData(keys, playerData.bullets, position, rotation);
+    });
+
+    let nextBattleFieldData = _mapBattleFieldData(playerDataMap);
 
     eventEmitter.emit('updateBattleField', nextBattleFieldData);
 
-    prevBattleFieldData = nextBattleFieldData;
+    battleFieldData = nextBattleFieldData;
 
   }, 1000 / 60);
 
   return eventEmitter;
 }
 
-function updateKeys(userId, keys) {
-  userKeysMap[userId] = keys;
+function updateKeys(playerId, keys) {
+  playerDataMap[playerId].keys = keys;
 }
 
-function addShip(userId) {
-  userShipMap[userId] = new Ship();
-  userKeysMap[userId] = {
-    left: 0,
-    right: 0,
-    up: 0,
-    space: 0
+function addShip(playerId) {
+  playerDataMap[playerId] = {
+    ship: new Ship(),
+    keys: {
+      left: 0,
+      right: 0,
+      up: 0,
+      space: 0
+    },
+    bullets: []
   };
 }
 
-function removeShip(userId) {
-  delete userShipMap[userId];
-  delete userKeysMap[userId];
+function removeShip(playerId) {
+  delete playerDataMap[playerId];
 }
 
 function getBattleFieldSnapshot() {
-  return _.cloneDeep(prevBattleFieldData);
+  return _.cloneDeep(battleFieldData);
 }
 
 /// private methods
 
+function _mapBattleFieldData(playerDataMap) {
+  return {
+    playerDataMap: _.mapValues(playerDataMap, ({ship, bullets}) => {
+      return {
+        ship: ship.get(),
+        bullets: bullets.map(bullet => bullet.get())
+      };
+    })
+  };
+}
+
+function _updateBulletsData(keys, bullets, position, rotation) {
+  _.each(bullets, (bullet) => _updateBullet(bullet));
+
+  if (keys.space &&
+    (bullets.length === 0 || _.last(bullets).shotDate + 300 < Date.now())) {
+    bullets.push(new Bullet({position, rotation}));
+  }
+
+  _.remove(bullets, bullet => bullet.isDeleted);
+}
+
+function _updateBullet(bullet) {
+  let {
+    position,
+    velocity
+  } = bullet.get();
+
+  // Move
+  position.x += velocity.x;
+  position.y += velocity.y;
+
+  bullet.update({
+    position
+  });
+
+  // Delete if it goes out of bounds
+  if ( position.x < 0
+    || position.y < 0
+    || position.x > SCREEN.width
+    || position.y > SCREEN.height ) {
+    bullet.destroy();
+  }
+}
 
 function _updateShipData(keys, shipData, params) {
   shipData = _.cloneDeep(shipData);

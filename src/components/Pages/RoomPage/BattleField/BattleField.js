@@ -1,6 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import _ from 'lodash';
 import renderShip from './renderers/ShipRenderer';
+import renderBullet from './renderers/BulletRenderer';
 import './BattleField.scss';
 
 /*eslint-disable */
@@ -49,15 +50,26 @@ export default class BattleField extends Component {
     const context = this.canvas.getContext('2d');
     this.setState({context});
 
-    this.props.socket.on('updateBattleField', ({userShipMap}) => {
+    this.props.socket.on('updateBattleField', ({playerDataMap}) => {
       this.update({
-        userShipMap: _.mapValues(userShipMap, ({position, rotation}) => {
+        playerDataMap: _.mapValues(playerDataMap, ({ship, bullets}) => {
           return {
-            position: {
-              x: position.x,
-              y: position.y
+            ship: {
+              position: {
+                x: ship.position.x,
+                y: ship.position.y
+              },
+              rotation: ship.rotation
             },
-            rotation
+            bullets: bullets.map(bullet => {
+              return {
+                position: {
+                  x: bullet.position.x,
+                  y: bullet.position.y
+                },
+                rotation: bullet.rotation
+              };
+            })
           };
         }),
         context
@@ -92,16 +104,17 @@ export default class BattleField extends Component {
     context.fillRect(0, 0, this.state.screen.width, this.state.screen.height);
     context.globalAlpha = 1;
 
-    // Remove or render
-    this.updateObjects(battleFieldData);
+    this.renderObjects(battleFieldData);
 
     context.restore();
   }
 
-  updateObjects({userShipMap}) {
+  renderObjects({playerDataMap}) {
     const {context} = this.state;
-    _.each(userShipMap, (shipData) => {
-      renderShip(shipData, context);
+
+    _.each(playerDataMap, (playerData) => {
+      renderShip(playerData.ship, context);
+      _.each(playerData.bullets, bullet => renderBullet(bullet, context));
     });
   }
 
