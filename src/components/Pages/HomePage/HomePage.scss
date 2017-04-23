@@ -17,17 +17,14 @@
     .room-item {
       display: flex;
       margin: 15px 0 0;
+      padding: 15px 10px;
+      cursor: pointer;
       overflow: hidden;
       transition: box-shadow 0.15s linear;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 
       &:hover {
         box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
-      }
-
-      &-link {
-        padding: 15px 10px;
-        flex-grow: 1;
       }
     }
   }

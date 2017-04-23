@@ -38,7 +38,7 @@ export default class LoginModal extends Component {
 
     loginApi.doSignIn(login)
       .then(() => {
-        this.props.modalStore.close();
+        this.props.modalStore.close(true);
       })
       .catch(error => {
         if (error.response.status === 400) {

@@ -14,7 +14,7 @@ export default class UserAuthState extends Component {
   };
 
   login = () => {
-    this.props.modalStore.showCustom('Login', <LoginModal/>);
+    this.props.modalStore.showCustom('Sign In', <LoginModal/>);
   };
 
   logout = () => {
@@ -39,7 +39,7 @@ export default class UserAuthState extends Component {
           type="button"
           className="btn btn-link"
           onClick={this.logout}>
-          logout
+          Sign Out
         </button>
         }
 
@@ -48,7 +48,7 @@ export default class UserAuthState extends Component {
           type="button"
           className="btn btn-link"
           onClick={this.login}>
-          login
+          Sign In
         </button>
         }
       </nav>
