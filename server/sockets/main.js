@@ -23,34 +23,33 @@ function init(io) {
     const {userId} = socket.decoded_token;
 
     socket.join(roomId);
-    gameEngine.addShip(userId);
+    gameEngine.addShip(userId, roomId);
 
     socketList.push(socket);
 
     socket.emit('updateBattleField',
-      gameEngine.getBattleFieldSnapshot()
+      gameEngine.getBattleFieldSnapshot(roomId)
     );
 
-    socket.on('keyUpdate', _updateKeys(userId));
+    socket.on('keyUpdate', _updateKeys(userId, roomId));
 
     socket.on('disconnect', () => {
       _.remove(socketList, (item) => item === socket);
-      gameEngine.removeShip(userId);
+      gameEngine.removeShip(userId, roomId);
     });
   });
 
-  _initGame();
+  _initGame(io);
 }
 
 /// private methods
 
 
-function _initGame() {
+function _initGame(io) {
   gameEngine.runGameCircle()
-    .on('updateBattleField', (battleFieldData) => {
-      _.each(socketList, (socket) => {
-        socket.emit('updateBattleField', battleFieldData);
-      });
+    .on('updateBattleField', (battleFieldData, roomId) => {
+      io.sockets.in(roomId)
+        .emit('updateBattleField', battleFieldData);
     });
 }
 

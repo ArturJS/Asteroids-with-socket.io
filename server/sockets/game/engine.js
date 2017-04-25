@@ -3,6 +3,8 @@ const _ = require('lodash');
 const Ship = require('./entities/Ship.js');
 const Bullet = require('./entities/Bullet.js');
 
+// TODO: split code and use IOC container
+
 module.exports = {
   runGameCircle,
   updateKeys,
@@ -24,7 +26,7 @@ const INERTIA = 0.99;
 
 let playerDataMap = {};
 
-let battleFieldData = {};
+let roomBattleMap = {};
 
 function runGameCircle() {
   const eventEmitter = new events.EventEmitter();
@@ -56,11 +58,10 @@ function runGameCircle() {
       _updateBulletsData(keys, playerData.bullets, position, rotation);
     });
 
-    let nextBattleFieldData = _mapBattleFieldData(playerDataMap);
 
-    eventEmitter.emit('updateBattleField', nextBattleFieldData);
-
-    battleFieldData = nextBattleFieldData;
+    _.each(roomBattleMap, (battleData, roomId) => {
+      eventEmitter.emit('updateBattleField', _mapBattleFieldData(playerDataMap, roomId), roomId);
+    });
 
   }, 1000 / 60);
 
@@ -71,7 +72,8 @@ function updateKeys(playerId, keys) {
   playerDataMap[playerId].keys = keys;
 }
 
-function addShip(playerId) {
+
+function addShip(playerId, roomId) {
   playerDataMap[playerId] = {
     ship: new Ship(),
     keys: {
@@ -82,21 +84,39 @@ function addShip(playerId) {
     },
     bullets: []
   };
+
+  if (!roomBattleMap.hasOwnProperty(roomId)) {
+    roomBattleMap[roomId] = {
+      players: []
+    };
+  }
+
+  roomBattleMap[roomId].players.push(playerId);
 }
 
-function removeShip(playerId) {
+
+function removeShip(playerId, roomId) {
   delete playerDataMap[playerId];
+
+  _.remove(roomBattleMap[roomId].players, pId => pId === playerId);
+
+  if (roomBattleMap[roomId].players.length === 0) {
+    delete roomBattleMap[roomId];
+  }
 }
 
-function getBattleFieldSnapshot() {
-  return _.cloneDeep(battleFieldData);
+function getBattleFieldSnapshot(roomId) {
+  return _mapBattleFieldData(playerDataMap, roomId);
 }
 
 /// private methods
 
-function _mapBattleFieldData(playerDataMap) {
+function _mapBattleFieldData(playerDataMap, roomId) {
+  let relatedPlayerIds = roomBattleMap[roomId].players;
+  let relatedPlayerDataMap = _.pick(playerDataMap, relatedPlayerIds);
+
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({ship, bullets}) => {
+    playerDataMap: _.mapValues(relatedPlayerDataMap, ({ship, bullets}) => {
       return {
         ship: ship.get(),
         bullets: bullets.map(bullet => bullet.get())
