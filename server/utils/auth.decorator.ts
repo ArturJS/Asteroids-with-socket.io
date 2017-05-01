@@ -1,7 +1,9 @@
-const jwt = require('jsonwebtoken');
-const jwtSecret = require('../config/config.js').jwtSecret;
+import * as jwt from 'jsonwebtoken';
+import config from '../config/config';
 
-module.exports = (controller, passIf = () => true) => {
+const jwtSecret = config.jwtSecret;
+
+export default (controller, passIf = (_) => true) => {
   return (req, res) => {
     const token = req.get('Authorization');
 

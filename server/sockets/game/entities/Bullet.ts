@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const symbolPosition = Symbol('position');
 const symbolRotation = Symbol('rotation');
@@ -6,8 +6,11 @@ const symbolVelocity = Symbol('velocity');
 const symbolIsDeleted = Symbol('isDeleted');
 const symbolDate = Symbol('symbolDate');
 
-module.exports = class Bullet {
-  constructor({position, rotation} = {}) {
+export default class Bullet {
+  constructor({
+    position = null,
+    rotation = null
+  } = {}) {
     let posDelta = _rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
 
     this[symbolPosition] = {
@@ -23,7 +26,11 @@ module.exports = class Bullet {
     this[symbolDate] = Date.now();
   }
 
-  update({position, rotation, velocity} = {}) {
+  update({
+    position = null,
+    rotation = null,
+    velocity = null
+  } = {}) {
     if (position) {
       this[symbolPosition] = position;
     }

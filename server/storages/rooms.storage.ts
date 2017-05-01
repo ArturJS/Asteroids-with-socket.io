@@ -1,7 +1,7 @@
-const shortid = require('shortid');
-const _ = require('lodash');
+import * as shortid from 'shortid';
+import * as _ from 'lodash';
 
-module.exports = {
+export default {
   getRooms: getRooms,
   getRoomById: getRoomById,
   createRoom: createRoom

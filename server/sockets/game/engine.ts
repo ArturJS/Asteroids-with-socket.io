@@ -1,11 +1,11 @@
-const events = require('events');
-const _ = require('lodash');
-const Ship = require('./entities/Ship.js');
-const Bullet = require('./entities/Bullet.js');
+import * as events from 'events';
+import * as _ from 'lodash';
+import Ship from './entities/Ship';
+import Bullet from './entities/Bullet';
 
 // TODO: split code and use IOC container
 
-module.exports = {
+export default {
   runGameCircle,
   updateKeys,
   addShip,

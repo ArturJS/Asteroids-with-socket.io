@@ -1,9 +1,11 @@
-const gameEngine = require('./game/engine.js');
-const _ = require('lodash');
-const socketioJwt = require("socketio-jwt");
-const jwtSecret = require('../config/config.js').jwtSecret;
+import gameEngine from './game/engine';
+import * as _ from 'lodash';
+import * as socketioJwt from 'socketio-jwt';
+import config from '../config/config';
 
-module.exports = {
+const jwtSecret = config.jwtSecret;
+
+export default {
   init
 };
 
@@ -31,7 +33,7 @@ function init(io) {
       gameEngine.getBattleFieldSnapshot(roomId)
     );
 
-    socket.on('keyUpdate', _updateKeys(userId, roomId));
+    socket.on('keyUpdate', _updateKeys(userId));
 
     socket.on('disconnect', () => {
       _.remove(socketList, (item) => item === socket);

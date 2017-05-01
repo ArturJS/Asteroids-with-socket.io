@@ -1,11 +1,15 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const symbolPosition = Symbol('position');
 const symbolRotation = Symbol('rotation');
 const symbolVelocity = Symbol('velocity');
 
-module.exports = class Ship {
-  constructor({position, rotation, velocity} = {}) {
+export default class Ship {
+  constructor({
+    position = null,
+    rotation = null,
+    velocity = null
+  } = {}) {
     this[symbolPosition] = position || {
         x: 450,
         y: 300
@@ -17,7 +21,11 @@ module.exports = class Ship {
       };
   }
 
-  update({position, rotation, velocity} = {}) {
+  update({
+    position = null,
+    rotation = null,
+    velocity = null
+  } = {}) {
     if (position) {
       this[symbolPosition] = position;
     }

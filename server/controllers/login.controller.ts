@@ -1,8 +1,10 @@
-const shortid = require('shortid');
-const jwt = require('jsonwebtoken');
-const jwtSecret = require('../config/config.js').jwtSecret;
+import * as shortid from 'shortid';
+import * as jwt from 'jsonwebtoken';
+import config from '../config/config';
 
-module.exports = {
+const jwtSecret = config.jwtSecret;
+
+export default {
   doSignIn
 };
 

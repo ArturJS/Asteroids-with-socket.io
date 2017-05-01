@@ -1,8 +1,8 @@
-const _ = require('lodash');
-const roomsStorage = require('../storages/rooms.storage.js');
-const authDecorator = require('../utils/auth.decorator.js');
+import * as _ from 'lodash';
+import roomsStorage from '../storages/rooms.storage';
+import authDecorator from '../utils/auth.decorator';
 
-module.exports = {
+export default {
 	getRooms,
 	getRoomById,
   createRoom: authDecorator(createRoom)

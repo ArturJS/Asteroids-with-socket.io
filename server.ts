@@ -2,24 +2,16 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as http from 'http';
 import * as socketio from 'socket.io';
+import corsMiddleware from './server/middlewares/cors.middleware';
+import noCacheMiddleware from './server/middlewares/no-cache.middleware';
+import apiRoute from './server/routes/api.route';
+import sockets from './server/sockets/main';
 
 const app = express();
-const httpExpress = (http as any).Server(app);
-const io = socketio(httpExpress);
+const httpServer = (http as any).Server(app);
+const io = socketio(httpServer);
 
-const port = process.env.PORT || 3333;
-
-const serverPrefixPath = './server/';
-
-// import middlewares
-const corsMiddleware = require(`${serverPrefixPath}middlewares/cors.middleware.js`);
-const noCacheMiddleware = require(`${serverPrefixPath}middlewares/no-cache.middleware.js`);
-
-// import routes
-const apiRoute = require(`${serverPrefixPath}routes/api.route.js`);
-
-// import sockets
-const sockets = require(`${serverPrefixPath}sockets/main.js`);
+const port = process.env.PORT || 3333; // todo add into config.ts
 
 // init parsers
 app.use(bodyParser.urlencoded({limit: '25mb', extended: false}));
@@ -36,6 +28,6 @@ app.use('/api', apiRoute);
 //==========Socket.IO===========
 sockets.init(io);
 
-httpExpress.listen(port, () => {
+httpServer.listen(port, () => {
   console.log(`NODE_API listening on http://localhost:${port}/`);
 });
