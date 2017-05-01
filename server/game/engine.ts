@@ -146,9 +146,7 @@ function _updateBullet(bullet) {
   position.x += velocity.x;
   position.y += velocity.y;
 
-  bullet.update({
-    position
-  });
+  bullet.position = position;
 
   // Delete if it goes out of bounds
   if ( position.x < 0

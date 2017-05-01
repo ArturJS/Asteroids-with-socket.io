@@ -1,4 +1,4 @@
-import gameEngine from './game/engine';
+import gameEngine from '../game/engine';
 import * as _ from 'lodash';
 import * as socketioJwt from 'socketio-jwt';
 import config from '../config/config';
