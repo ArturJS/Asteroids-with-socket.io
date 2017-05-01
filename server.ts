@@ -1,8 +1,11 @@
-const express = require('express');
+import * as express from 'express';
+import * as bodyParser from 'body-parser';
+import * as http from 'http';
+import * as socketio from 'socket.io';
+
 const app = express();
-const bodyParser = require('body-parser');
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const httpExpress = (http as any).Server(app);
+const io = socketio(httpExpress);
 
 const port = process.env.PORT || 3333;
 
@@ -33,6 +36,6 @@ app.use('/api', apiRoute);
 //==========Socket.IO===========
 sockets.init(io);
 
-http.listen(port, () => {
+httpExpress.listen(port, () => {
   console.log(`NODE_API listening on http://localhost:${port}/`);
 });
