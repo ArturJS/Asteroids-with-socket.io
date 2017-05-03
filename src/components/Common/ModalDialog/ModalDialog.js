@@ -42,8 +42,8 @@ export default class ModalDialog extends Component {
         contentLabel={''}>
         <div className="modal-dialog">
           <CSSTransitionGroup
-            className="fade-in-out"
-            transitionName="fade-in-out"
+            className="transition-container"
+            transitionName="rotate-in-out"
             transitionEnter={true}
             transitionLeave={true}
             transitionAppear={true}

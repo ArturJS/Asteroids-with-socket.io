@@ -21,6 +21,7 @@
     width: auto;
     margin: 10px;
     perspective: 500px;
+    perspective-origin: top;
 
     @media (min-width: $tablet-width) {
       padding-top: 10%;
@@ -29,33 +30,29 @@
     }
   }
 
-  .fade-in-out {
+  .transition-container {
+    display: block;
+  }
+
+  .rotate-in-out {
     &-enter,
     &-appear {
-      opacity: 0.01;
-      transform: translateY(-30%) rotateX(-95deg);
+      transform: rotateX(-90deg);
     }
 
-    &-enter.fade-in-out-enter-active,
-    &-appear.fade-in-out-appear-active {
-      opacity: 1;
-      transition: opacity $fade-in-out-delay ease-out, transform $fade-in-out-delay ease-out;
+    &-enter.rotate-in-out-enter-active,
+    &-appear.rotate-in-out-appear-active {
+      transition: transform $rotate-in-out-delay ease-out;
       transform: rotateX(0);
     }
 
     &-leave {
-      opacity: 1;
       transform: rotateX(0);
     }
 
-    &-leave.fade-in-out-leave-active {
-      opacity: 0.01;
-      transform: translateY(-30%) rotateX(-95deg);
-      transition: opacity $fade-in-out-delay ease-out, transform $fade-in-out-delay ease-out;
-    }
-
-    .modal-content {
-      transform-origin: top center;
+    &-leave.rotate-in-out-leave-active {
+      transform: rotateX(-90deg);
+      transition: transform $rotate-in-out-delay ease-out;
     }
   }
 
@@ -66,6 +63,7 @@
     outline: 0;
     background-clip: padding-box;
     pointer-events: auto;
+    transform-origin: 100px -100px;
 
     @media (min-width: $tablet-width) {
       box-shadow: 0 5px 15px $c-modal-shadow;
@@ -140,7 +138,7 @@
 .ReactModal__Overlay {
   z-index: 1080;
   overflow-y: auto;
-  transition: background-color $fade-in-out-delay ease-out;
+  transition: background-color $rotate-in-out-delay ease-out;
 
   &--before-close {
     background-color: rgba(255, 255, 255, 0) !important; // necessary to override inline styles
