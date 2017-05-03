@@ -1,7 +1,6 @@
 import React from 'react';
 import {Router, Route, IndexRedirect, hashHistory, Redirect} from 'react-router';
 import {Provider} from 'mobx-react';
-import 'normalize.css';
 import './App.scss';
 
 // Pages
