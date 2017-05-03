@@ -1,9 +1,14 @@
 export default class Particle {
-  constructor(args) {
-    this.position = args.position;
-    this.velocity = args.velocity;
-    this.radius = args.size;
-    this.lifeSpan = args.lifeSpan;
+  constructor({
+    position,
+    velocity,
+    size,
+    lifeSpan
+  }) {
+    this.position = position;
+    this.velocity = velocity;
+    this.radius = size;
+    this.lifeSpan = lifeSpan;
     this.inertia = 0.98;
   }
 

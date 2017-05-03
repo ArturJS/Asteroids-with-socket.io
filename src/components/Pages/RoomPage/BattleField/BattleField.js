@@ -1,7 +1,9 @@
 import React, {Component, PropTypes} from 'react';
 import _ from 'lodash';
+import {rotatePoint} from './helpers';
 import renderShip from './renderers/ShipRenderer';
 import renderBullet from './renderers/BulletRenderer';
+import Particle from './entities/Particle';
 import './BattleField.scss';
 
 /*eslint-disable */
@@ -39,6 +41,8 @@ export default class BattleField extends Component {
       space: 0
     };
 
+    this.particles = [];
+
     this.handleKeyUp = this.handleKeys.bind(this, false);
     this.handleKeyDown = this.handleKeys.bind(this, true);
   }
@@ -52,7 +56,7 @@ export default class BattleField extends Component {
 
     this.props.socket.on('updateBattleField', ({playerDataMap}) => {
       this.update({
-        playerDataMap: _.mapValues(playerDataMap, ({ship, bullets}) => {
+        playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
           return {
             ship: {
               position: {
@@ -60,6 +64,12 @@ export default class BattleField extends Component {
                 y: ship.position.y
               },
               rotation: ship.rotation
+            },
+            keys: {
+              left: keys.left,
+              right: keys.right,
+              up: keys.up,
+              space: keys.space
             },
             bullets: bullets.map(bullet => {
               return {
@@ -104,9 +114,42 @@ export default class BattleField extends Component {
     context.fillRect(0, 0, this.state.screen.width, this.state.screen.height);
     context.globalAlpha = 1;
 
+    this.updateParticles(battleFieldData);
+
     this.renderObjects(battleFieldData);
 
     context.restore();
+  }
+
+  updateParticles({playerDataMap}) {
+    this.createParticles(playerDataMap);
+
+    _.each(this.particles, particle => particle.render(this.state));
+
+    _.remove(this.particles, particle => particle.delete);
+  }
+
+  createParticles(playerDataMap) {
+    _.each(playerDataMap, ({ship, keys}) => {
+      if (keys.up) {
+        let posDelta = rotatePoint({x:0, y:-10}, {x:0,y:0}, (ship.rotation-180) * Math.PI / 180);
+
+        this.particles.push(
+          new Particle({
+            position: {
+              x: ship.position.x + posDelta.x + _.random(-2, 2),
+              y: ship.position.y + posDelta.y + _.random(-2, 2)
+            },
+            velocity: {
+              x: posDelta.x / _.random(3, 5),
+              y: posDelta.y / _.random(3, 5)
+            },
+            size: _.random(1, 3),
+            lifeSpan: _.random(30, 50)
+          })
+        );
+      }
+    });
   }
 
   renderObjects({playerDataMap}) {

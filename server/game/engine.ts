@@ -69,7 +69,9 @@ function runGameCircle() {
 }
 
 function updateKeys(playerId, keys) {
-  playerDataMap[playerId].keys = keys;
+  if (playerDataMap[playerId]) {
+    playerDataMap[playerId].keys = keys;
+  }
 }
 
 
@@ -116,9 +118,15 @@ function _mapBattleFieldData(playerDataMap, roomId) {
   let relatedPlayerDataMap = _.pick(playerDataMap, relatedPlayerIds);
 
   return {
-    playerDataMap: _.mapValues(relatedPlayerDataMap, ({ship, bullets}) => {
+    playerDataMap: _.mapValues(relatedPlayerDataMap, ({ship, bullets, keys}) => {
       return {
         ship: ship.get(),
+        keys: {
+          left: keys.left,
+          right: keys.right,
+          up: keys.up,
+          space: keys.space
+        },
         bullets: bullets.map(bullet => bullet.get())
       };
     })
