@@ -1,0 +1,22 @@
+.fade-in-out {
+
+  &-enter,
+  &-appear {
+    opacity: 0.01;
+  }
+
+  &-enter.fade-in-out-enter-active,
+  &-appear.fade-in-out-appear-active {
+    opacity: 1;
+    transition: opacity $fade-in-out-delay ease-out;
+  }
+
+  &-leave {
+    opacity: 1;
+  }
+
+  &-leave.fade-in-out-leave-active {
+    opacity: 0.01;
+    transition: opacity $fade-in-out-delay ease-in;
+  }
+}

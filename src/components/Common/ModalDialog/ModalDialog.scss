@@ -19,12 +19,44 @@
 		position: relative;
 		width: auto;
 		margin: 10px;
+    perspective: 500px;
+
 		@media (min-width: $tablet-width) {
 			padding-top: 10%;
 			display: flex;
 			justify-content: center;
 		}
 	}
+
+  .fade-in-out {
+    &-enter,
+    &-appear {
+      opacity: 0.01;
+      transform: translateY(-30%) rotateX(-95deg);
+    }
+
+    &-enter.fade-in-out-enter-active,
+    &-appear.fade-in-out-appear-active {
+      opacity: 1;
+      transition: opacity $fade-in-out-delay ease-out, transform $fade-in-out-delay ease-out;
+      transform: rotateX(0);
+    }
+
+    &-leave {
+      opacity: 1;
+      transform: rotateX(0);
+    }
+
+    &-leave.fade-in-out-leave-active {
+      opacity: 0.01;
+      transform: translateY(-30%) rotateX(-95deg);
+      transition: opacity $fade-in-out-delay ease-out, transform $fade-in-out-delay ease-out;
+    }
+
+    .modal-content {
+      transform-origin: top center;
+    }
+  }
 
 	.modal-content {
 		background-color: $c-modal-bg;
