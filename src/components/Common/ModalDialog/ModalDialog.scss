@@ -61,7 +61,6 @@
 
   .modal-content {
     background-color: $c-modal-bg;
-    border: 1px solid $c-modal-content-border;
     box-shadow: 0 3px 9px $c-modal-shadow;
     position: relative;
     outline: 0;
@@ -119,9 +118,10 @@
     }
   }
 
-  .modal-body {
+  .modal-body,
+  .modal-custom-body {
     position: relative;
-    padding: 15px;
+    padding: 10px 5px;
   }
 
   .modal-footer {
