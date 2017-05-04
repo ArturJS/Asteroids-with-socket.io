@@ -12,14 +12,14 @@ export default {
 
 ///
 
-let _playersMap = {};
+let _playersMap: Map<string, IPlayer> = new Map();
 
-let _roomBattleMap = {};
+let _roomBattleMap: Map<string, IRoomBattle> = new Map();
 
-let _asteroidsMap = {};
+let _asteroidsMap: Map<string, IAsteroid> = new Map();
 
 
-function getStorageData() {
+function getStorageData(): IStorageData {
   return {
     playersMap: _playersMap,
     roomBattleMap: _roomBattleMap,
@@ -31,22 +31,22 @@ function setStorageData({
   playersMap,
   roomBattleMap,
   asteroidsMap
-}) {
+}:IStorageData) {
   _playersMap = playersMap;
   _roomBattleMap = roomBattleMap;
   _asteroidsMap = asteroidsMap;
 }
 
 
-function updateKeys(playerId, keys) {
-  if (_playersMap[playerId]) {
-    _playersMap[playerId].keys = keys;
+function updateKeys(playerId: string, keys: IKeys) {
+  if (_playersMap.has(playerId)) {
+    _playersMap.get(playerId).keys = keys;
   }
 }
 
 
-function addShip(playerId, roomId) {
-  _playersMap[playerId] = {
+function addShip(playerId: string, roomId: string): void {
+  _playersMap.set(playerId, {
     ship: new Ship(),
     keys: {
       left: 0,
@@ -55,53 +55,53 @@ function addShip(playerId, roomId) {
       space: 0
     },
     bullets: []
-  };
+  });
 
-  if (!_roomBattleMap.hasOwnProperty(roomId)) {
-    let asteroids = _generateAsteroids(_.random(3, 5));
+  if (!_roomBattleMap.has(roomId)) {
+    let asteroids: IAsteroid[] = _generateAsteroids(_.random(3, 5));
 
-    _.each(asteroids, asteroid => {
-      _asteroidsMap[asteroid.id] = asteroid;
+    _.each(asteroids, (asteroid: IAsteroid) => {
+      _asteroidsMap.set(asteroid.id, asteroid);
     });
 
-    _roomBattleMap[roomId] = {
+    _roomBattleMap.set(roomId, {
       playerIds: [],
-      asteroidIds: asteroids.map(item => item.id)
-    };
+      asteroidIds: asteroids.map((asteroid: IAsteroid) => asteroid.id)
+    });
   }
 
-  _roomBattleMap[roomId].playerIds.push(playerId);
+  _roomBattleMap.get(roomId).playerIds.push(playerId);
 }
 
 
-function removeShip(playerId, roomId) {
-  delete _playersMap[playerId];
+function removeShip(playerId: string, roomId: string): void {
+  _playersMap.delete(playerId);
 
-  _.remove(_roomBattleMap[roomId].playerIds, pId => pId === playerId);
+  _.remove(_roomBattleMap.get(roomId).playerIds, (pId: string) => pId === playerId);
 
-  if (_roomBattleMap[roomId].playerIds.length === 0) {
-    let {asteroidIds} = _roomBattleMap[roomId];
+  if (_roomBattleMap.get(roomId).playerIds.length === 0) {
+    let {asteroidIds} = _roomBattleMap.get(roomId);
 
-    _asteroidsMap = _.omit(_asteroidsMap, asteroidIds);
+    _.each(asteroidIds, (asteroidId: string) => _asteroidsMap.delete(asteroidId));
 
-    delete _roomBattleMap[roomId];
+    _roomBattleMap.delete(roomId);
   }
 }
 
 /// private methods
 
 
-function _generateAsteroids(howMany) {
-  let asteroids = [];
+function _generateAsteroids(howMany): IAsteroid[] {
+  let asteroids: IAsteroid[] = [];
 
-  for (let i = 0; i < howMany; i++) {
+  _.times(howMany, () => {
     asteroids.push(
       new Asteroid({
         id: shortid.generate(),
         radius: _.random(30, 60)
       })
     );
-  }
+  });
 
   return asteroids;
 }

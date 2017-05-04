@@ -63,10 +63,6 @@ export default class Bullet implements IBullet {
     this.isDeleted = true;
   }
 
-  get shotDate(): number {
-    return this.date;
-  }
-
 
   get position(): IPoint {
     return this._position;

@@ -4,4 +4,5 @@ interface IBullet {
   velocity: IPoint;
   isDeleted: boolean;
   date: number;
+  destroy?():void;
 }

@@ -2,6 +2,7 @@ import * as events from 'events';
 import * as _ from 'lodash';
 import calcEngine from './calcEngine';
 import gameStorage from './storage';
+import EventEmitter = NodeJS.EventEmitter;
 
 // TODO: use IOC container http://inversify.io/
 
@@ -15,21 +16,21 @@ export default {
 
 ///
 
-function runGameCircle() {
-  const eventEmitter = new events.EventEmitter();
+function runGameCircle(): EventEmitter {
+  const eventEmitter: EventEmitter = new events.EventEmitter();
 
-  setInterval(() => {
-    _.flow([
+  setInterval((): void => {
+    _.flow(
       gameStorage.getStorageData,
       calcEngine.calcNextScene,
       gameStorage.setStorageData
-    ])();
+    )();
 
-    let gameStorageData = gameStorage.getStorageData();
+    let gameStorageData: IStorageData = gameStorage.getStorageData();
 
-    let roomIds = Object.keys(gameStorageData.roomBattleMap);
+    let roomIds = Array.from(gameStorageData.roomBattleMap.keys());
 
-    _.each(roomIds, (roomId) => {
+    _.each(roomIds, (roomId: string) => {
       eventEmitter.emit('updateBattleField', _mapBattleFieldData(gameStorageData, roomId), roomId);
     });
 
@@ -38,19 +39,19 @@ function runGameCircle() {
   return eventEmitter;
 }
 
-function updateKeys(playerId, keys) {
+function updateKeys(playerId: string, keys: IKeys): void {
   gameStorage.updateKeys(playerId, keys);
 }
 
-function addShip(playerId, roomId) {
+function addShip(playerId: string, roomId: string): void {
   gameStorage.addShip(playerId, roomId);
 }
 
-function removeShip(playerId, roomId) {
+function removeShip(playerId: string, roomId: string): void {
   gameStorage.removeShip(playerId, roomId);
 }
 
-function getBattleFieldSnapshot(roomId) {
+function getBattleFieldSnapshot(roomId: string) {
   return _mapBattleFieldData(gameStorage.getStorageData(), roomId);
 }
 
@@ -60,32 +61,51 @@ function _mapBattleFieldData({
   playersMap,
   roomBattleMap,
   asteroidsMap
-}, roomId) {
+}:IStorageData, roomId: string): IBattleFieldData {
 
   let {
     playerIds,
     asteroidIds
-  } = roomBattleMap[roomId];
+  }:{playerIds: string[], asteroidIds: string[]} = roomBattleMap.get(roomId);
 
-  let playerDataMap = _.pick(playersMap, playerIds);
-  let asteroids = _.values(_.pick(asteroidsMap, asteroidIds));
+  let playerDataMap: {[index: string]: IPlayer} = {};
+
+  _.each(playerIds, (pId: string): void => {
+    playerDataMap[pId] = playersMap.get(pId)
+  });
+
+  let asteroids: IAsteroid[] = [];
+
+  _.each(asteroidIds, (pId: string): void => {
+    asteroids.push(asteroidsMap.get(pId));
+  });
 
   return {
     playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
       return {
-        ship: ship.get(),
+        ship: {
+          position: ship.position,
+          rotation: ship.rotation,
+          velocity: ship.velocity
+        },
         keys: {
           left: keys.left,
           right: keys.right,
           up: keys.up,
           space: keys.space
         },
-        bullets: bullets.map(bullet => bullet.get())
+        bullets: bullets.map((bullet: IBullet) => ({
+          position: bullet.position,
+          rotation: bullet.rotation,
+          velocity: bullet.velocity,
+          isDeleted: bullet.isDeleted,
+          date: bullet.date
+        }))
       };
     }),
     asteroids: asteroids
-      .map(asteroid => ({
-        vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
+      .map((asteroid: IAsteroid): {vertices: IPoint[]} => ({
+        vertices: asteroid.vertices.map((v: IPoint): IPoint => ({x: v.x, y: v.y}))
       }))
   };
 }

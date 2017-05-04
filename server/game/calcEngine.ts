@@ -8,38 +8,38 @@ export default {
 
 ///
 
-const SCREEN = {
+const SCREEN: {width: number, height: number} = {
   width: 900,
   height: 600
 };
 
-const ROTATION_SPEED = 6;
-const SPEED = 0.15;
-const INERTIA = 0.99;
+const ROTATION_SPEED: number = 6;
+const SPEED: number = 0.15;
+const INERTIA: number = 0.99;
 
 function calcNextScene({
   playersMap,
   roomBattleMap,
   asteroidsMap
-}) {
+}:IScene): IScene {
   playersMap = _.cloneDeep(playersMap);
   roomBattleMap = _.cloneDeep(roomBattleMap);
   asteroidsMap = _.cloneDeep(asteroidsMap);
 
-  let playerDataList = _.values(playersMap);
+  let playerDataList: IPlayer[] = Array.from(playersMap.values());
 
-  _.each(playerDataList, (playerData) => {
+  _.each(playerDataList, (playerData: IPlayer) => {
     let {
       ship,
       keys
-    } = playerData;
+    }:{ship: IShip, keys: IKeys} = playerData;
 
     _updateShipData(ship, keys);
 
     let {
       position,
       rotation
-    } = ship;
+    }:{position: IPoint, rotation: number} = ship;
 
     _updateBulletsData(playerData.bullets, keys, position, rotation);
   });
@@ -56,7 +56,7 @@ function calcNextScene({
 /// private methods
 
 
-function _updateShipData(ship, keys) {
+function _updateShipData(ship: IShip, keys: IKeys): void {
   if (keys.up) {
     ship.velocity = _accelerate(ship.velocity, ship.rotation, SPEED);
   }
@@ -94,7 +94,7 @@ function _updateShipData(ship, keys) {
   }
 }
 
-function _accelerate(velocity, rotation, speed) {
+function _accelerate(velocity: IPoint, rotation: number, speed: number): IPoint {
   return {
     x: velocity.x - Math.sin(-rotation * Math.PI / 180) * speed,
     y: velocity.y - Math.cos(-rotation * Math.PI / 180) * speed
@@ -102,16 +102,16 @@ function _accelerate(velocity, rotation, speed) {
 }
 
 
-function _updateAsteroids(asteroids) {
-  _.each(asteroids, asteroid => {
+function _updateAsteroids(asteroids: Map<string, IAsteroid>): void {
+  _.each(Array.from(asteroids.values()), (asteroid: IAsteroid) => {
     let {
       rotationSpeed,
       vertices,
       center
-    } = asteroid;
+    }:{rotationSpeed: number, vertices: IPoint[], center: IPoint} = asteroid;
 
     asteroid.vertices = vertices
-      .map(v => rotatePoint(v, center, rotationSpeed));
+      .map((v: IPoint): IPoint => rotatePoint(v, center, rotationSpeed));
 
     // Move
     _translatePolygon(asteroid.vertices, {
@@ -136,29 +136,29 @@ function _updateAsteroids(asteroids) {
   });
 }
 
-function _translatePolygon(vertices, {dx = 0, dy = 0}) {
-  _.each(vertices, v => {
+function _translatePolygon(vertices: IPoint[], {dx = 0, dy = 0}:{dx?: number, dy?: number} = {}): void {
+  _.each(vertices, (v: IPoint): void => {
     v.x += dx;
     v.y += dy;
   });
 }
 
-function _updateBulletsData(bullets, keys, position, rotation) {
-  _.each(bullets, (bullet) => _updateBullet(bullet));
+function _updateBulletsData(bullets:IBullet[], keys:IKeys, position:IPoint, rotation:number):void {
+  _.each(bullets, (bullet:IBullet):void => _updateBullet(bullet));
 
   if (keys.space &&
-    (bullets.length === 0 || _.last(bullets).shotDate + 300 < Date.now())) {
+    (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
     bullets.push(new Bullet({position, rotation}));
   }
 
-  _.remove(bullets, bullet => bullet.isDeleted);
+  _.remove(bullets, (bullet:IBullet):boolean => bullet.isDeleted);
 }
 
-function _updateBullet(bullet) {
+function _updateBullet(bullet:IBullet):void {
   let {
     position,
     velocity
-  } = bullet.get();
+  } = bullet;
 
   // Move
   position.x += velocity.x;
