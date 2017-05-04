@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import {rotatePoint} from '../helpers';
 
 export default class Bullet {
@@ -61,11 +60,11 @@ export default class Bullet {
 
 
   get position() {
-    return _.clone(this._position);
+    return this._position;
   }
 
   set position(value) {
-    this._position = _.clone(value);
+    this._position = value;
   }
 
 
@@ -79,11 +78,11 @@ export default class Bullet {
 
 
   get velocity() {
-    return _.clone(this._velocity);
+    return this._velocity;
   }
 
   set velocity(value) {
-    this._velocity = _.clone(value);
+    this._velocity = value;
   }
 
 

@@ -85,11 +85,11 @@ export default class Asteroid {
 
 
   get velocity() {
-    return _.clone(this._velocity);
+    return this._velocity;
   }
 
   set velocity(value) {
-    this._velocity = _.clone(value);
+    this._velocity = value;
   }
 
 
