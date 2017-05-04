@@ -1,12 +1,16 @@
-export default class Ship {
-  private _position;
-  private _rotation;
-  private _velocity;
+export default class Ship implements IShip {
+  private _position: IPoint;
+  private _rotation: number;
+  private _velocity: IPoint;
 
   constructor({
     position = null,
     rotation = null,
     velocity = null
+  }:{
+    position?: IPoint,
+    rotation?: number,
+    velocity?: IPoint
   } = {}) {
     this.position = position || {
         x: 450,
@@ -23,7 +27,11 @@ export default class Ship {
     position = null,
     rotation = null,
     velocity = null
-  } = {}) {
+  }:{
+    position?: IPoint,
+    rotation?: number,
+    velocity?: IPoint
+  } = {}): void {
     if (position) {
       this.position = position;
     }
@@ -35,38 +43,38 @@ export default class Ship {
     }
   }
 
-  get() {
+  get(): IShip {
     return {
       position: this.position,
       rotation: this.rotation,
       velocity: this.velocity
-    }
+    };
   }
 
 
-  get position() {
+  get position(): IPoint {
     return this._position;
   }
 
-  set position(value) {
+  set position(value: IPoint) {
     this._position = value;
   }
 
 
-  get rotation() {
+  get rotation(): number {
     return this._rotation;
   }
 
-  set rotation(value) {
+  set rotation(value: number) {
     this._rotation = value;
   }
 
 
-  get velocity() {
+  get velocity(): IPoint {
     return this._velocity;
   }
 
-  set velocity(value) {
+  set velocity(value: IPoint) {
     this._velocity = value;
   }
 };

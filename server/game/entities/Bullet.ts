@@ -1,17 +1,20 @@
 import {rotatePoint} from '../helpers';
 
-export default class Bullet {
-  private _position;
-  private _rotation;
-  private _velocity;
-  private _isDeleted;
-  private _date;
+export default class Bullet implements IBullet {
+  private _position: IPoint;
+  private _rotation: number;
+  private _velocity: IPoint;
+  private _isDeleted: boolean;
+  private _date: number;
 
   constructor({
-    position = null,
-    rotation = null
-  } = {}) {
-    let posDelta = rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
+    position,
+    rotation
+  }:{
+    position: IPoint,
+    rotation: number
+  }) {
+    let posDelta: IPoint = rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
 
     this.position = {
       x: position.x + posDelta.x,
@@ -30,7 +33,11 @@ export default class Bullet {
     position = null,
     rotation = null,
     velocity = null
-  } = {}) {
+  }:{
+    position?: IPoint,
+    rotation?: number,
+    velocity?: IPoint
+  } = {}): void {
     if (position) {
       this.position = position;
     }
@@ -42,64 +49,66 @@ export default class Bullet {
     }
   }
 
-  get() {
+  get(): IBullet {
     return {
       position: this.position,
       rotation: this.rotation,
-      velocity: this.velocity
-    }
+      velocity: this.velocity,
+      isDeleted: this.isDeleted,
+      date: this.date
+    };
   }
 
-  destroy() {
+  destroy(): void {
     this.isDeleted = true;
   }
 
-  get shotDate() {
+  get shotDate(): number {
     return this.date;
   }
 
 
-  get position() {
+  get position(): IPoint {
     return this._position;
   }
 
-  set position(value) {
+  set position(value: IPoint) {
     this._position = value;
   }
 
 
-  get rotation() {
+  get rotation(): number {
     return this._rotation;
   }
 
-  set rotation(value) {
+  set rotation(value: number) {
     this._rotation = value;
   }
 
 
-  get velocity() {
+  get velocity(): IPoint {
     return this._velocity;
   }
 
-  set velocity(value) {
+  set velocity(value: IPoint) {
     this._velocity = value;
   }
 
 
-  set isDeleted(value) {
+  set isDeleted(value: boolean) {
     this._isDeleted = value;
   }
 
-  get isDeleted() {
+  get isDeleted(): boolean {
     return this._isDeleted;
   }
 
 
-  set date(value) {
+  set date(value: number) {
     this._date = value;
   }
 
-  get date() {
+  get date(): number {
     return this._date;
   }
 };

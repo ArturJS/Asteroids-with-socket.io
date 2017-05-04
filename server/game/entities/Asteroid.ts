@@ -1,20 +1,26 @@
 import * as _ from 'lodash';
 
-export default class Asteroid {
-  private _id;
-  private _velocity;
-  private _isDeleted;
-  private _rotationSpeed;
-  private _radius;
-  private _vertices;
+export default class Asteroid implements IAsteroid {
+  private _id: string;
+  private _velocity: IPoint;
+  private _isDeleted: boolean;
+  private _rotationSpeed: number;
+  private _radius: number;
+  private _vertices: IPoint[];
 
   constructor({
-    id = null,
+    id,
     velocity = null,
     rotationSpeed = null,
-    radius = null,
+    radius,
     vertices = null,
-  } = {}) {
+  }:{
+    id: string,
+    velocity?: IPoint,
+    rotationSpeed?: number,
+    radius: number,
+    vertices?: IPoint[]
+  }) {
     this.id = id;
     this.radius = radius;
     this.velocity = velocity || {
@@ -23,6 +29,7 @@ export default class Asteroid {
       };
     this.rotationSpeed = rotationSpeed || _.random(-3.0, 3.0) * Math.PI / 180; //  * Math.PI / 180 <- degrees to radians
     this.vertices = vertices || _asteroidVertices(8, radius);
+    this.isDeleted = false;
   }
 
   update({
@@ -32,9 +39,16 @@ export default class Asteroid {
     vertices = null,
     radius = null,
     rotationSpeed = null
-  } = {}) {
+  }:{
+    id?: string,
+    velocity?: IPoint,
+    isDeleted?: boolean,
+    vertices?: IPoint[],
+    radius?: number,
+    rotationSpeed?: number
+  } = {}): void {
     if (id) {
-      this.id= id;
+      this.id = id;
     }
     if (velocity) {
       this.velocity = velocity;
@@ -53,7 +67,7 @@ export default class Asteroid {
     }
   }
 
-  get() {
+  get(): IAsteroid {
     return {
       id: this.id,
       center: this.center,
@@ -62,102 +76,102 @@ export default class Asteroid {
       vertices: this.vertices,
       radius: this.radius,
       rotationSpeed: this.rotationSpeed
-    }
+    };
   }
 
-  destroy() {
+  destroy(): void {
     this.isDeleted = true;
   }
 
 
-  get id() {
+  get id(): string {
     return this._id;
   }
 
-  set id(value) {
+  set id(value: string) {
     this._id = value;
   }
 
 
-  get center() {
+  get center(): IPoint {
     return _compute2DPolygonCentroid(this.vertices);
   }
 
 
-  get velocity() {
+  get velocity(): IPoint {
     return this._velocity;
   }
 
-  set velocity(value) {
+  set velocity(value: IPoint) {
     this._velocity = value;
   }
 
 
-  set isDeleted(value) {
-    this._isDeleted = value;
-  }
-
-  get isDeleted() {
+  get isDeleted(): boolean {
     return this._isDeleted;
   }
 
+  set isDeleted(value: boolean) {
+    this._isDeleted = value;
+  }
 
-  get vertices() {
+
+  get vertices(): IPoint[] {
     return this._vertices;
   }
 
-  set vertices(value) {
+  set vertices(value: IPoint[]) {
     this._vertices = value;
   }
 
 
-  get radius() {
+  get radius(): number {
     return this._radius;
   }
 
-  set radius(value) {
+  set radius(value: number) {
     this._radius = value;
   }
 
 
-  get rotationSpeed() {
+  get rotationSpeed(): number {
     return this._rotationSpeed;
   }
 
-  set rotationSpeed(value) {
+  set rotationSpeed(value: number) {
     this._rotationSpeed = value;
   }
 };
 
 // private methods
 
-function _asteroidVertices(count, rad) {
-  let vertices = [];
+function _asteroidVertices(count: number, radius: number): IPoint[] {
+  let vertices: IPoint[] = [];
 
-  for (let i = 0; i < count; i++) {
+  _.times(count, (i: number) => {
     vertices.push({
-      x: (-Math.sin((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * rad,
-      y: (-Math.cos((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * rad
+      x: (-Math.sin((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * radius,
+      y: (-Math.cos((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * radius
     });
-  }
+  });
 
   return vertices;
 }
 
 // taken from http://stackoverflow.com/questions/2792443/finding-the-centroid-of-a-polygon#answer-2792459
-function _compute2DPolygonCentroid(vertices) {
-  let centroid = {x: 0, y: 0};
-  let signedArea = 0.0;
-  let x0 = 0.0; // Current vertex X
-  let y0 = 0.0; // Current vertex Y
-  let x1 = 0.0; // Next vertex X
-  let y1 = 0.0; // Next vertex Y
-  let a = 0.0;  // Partial signed area
+function _compute2DPolygonCentroid(vertices: IPoint[]): IPoint {
+  let centroid: IPoint = {x: 0, y: 0};
+  let signedArea: number = 0.0;
+  let x0: number = 0.0; // Current vertex X
+  let y0: number = 0.0; // Current vertex Y
+  let x1: number = 0.0; // Next vertex X
+  let y1: number = 0.0; // Next vertex Y
+  let a: number = 0.0;  // Partial signed area
 
-  let vertexCount = vertices.length;
+  let vertexCount: number = vertices.length;
 
   // For all vertices except last
-  let i = 0;
+  let i: number = 0;
   for (; i < vertexCount - 1; ++i) {
     x0 = vertices[i].x;
     y0 = vertices[i].y;
