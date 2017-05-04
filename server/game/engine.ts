@@ -1,7 +1,10 @@
 import * as events from 'events';
+import * as shortid from 'shortid';
 import * as _ from 'lodash';
 import Ship from './entities/Ship';
 import Bullet from './entities/Bullet';
+import Asteroid from "./entities/Asteroid";
+import {rotatePoint} from './helpers';
 
 // TODO: split code and use IOC container
 
@@ -27,6 +30,8 @@ const INERTIA = 0.99;
 let playerDataMap = {};
 
 let roomBattleMap = {};
+
+let globalAsteroidsList = [];
 
 function runGameCircle() {
   const eventEmitter = new events.EventEmitter();
@@ -54,10 +59,11 @@ function runGameCircle() {
         rotation
       } = ship.get();
 
-      // todo make it pure function
+      // todo get rid from pure functions
       _updateBulletsData(keys, playerData.bullets, position, rotation);
     });
 
+    _updateAsteroids(globalAsteroidsList);
 
     _.each(roomBattleMap, (battleData, roomId) => {
       eventEmitter.emit('updateBattleField', _mapBattleFieldData(playerDataMap, roomId), roomId);
@@ -88,8 +94,13 @@ function addShip(playerId, roomId) {
   };
 
   if (!roomBattleMap.hasOwnProperty(roomId)) {
+    let asteroids = generateAsteroids(_.random(3, 5));
+
+    globalAsteroidsList = [...globalAsteroidsList, ...asteroids];
+
     roomBattleMap[roomId] = {
-      players: []
+      players: [],
+      asteroids: asteroids.map(item => item.id)
     };
   }
 
@@ -103,6 +114,10 @@ function removeShip(playerId, roomId) {
   _.remove(roomBattleMap[roomId].players, pId => pId === playerId);
 
   if (roomBattleMap[roomId].players.length === 0) {
+    let asteroidIds = roomBattleMap[roomId].asteroids;
+
+    _.remove(globalAsteroidsList, item => asteroidIds.includes(item.id));
+
     delete roomBattleMap[roomId];
   }
 }
@@ -113,12 +128,14 @@ function getBattleFieldSnapshot(roomId) {
 
 /// private methods
 
-function _mapBattleFieldData(playerDataMap, roomId) {
-  let relatedPlayerIds = roomBattleMap[roomId].players;
-  let relatedPlayerDataMap = _.pick(playerDataMap, relatedPlayerIds);
+function _mapBattleFieldData(allPlayersDataMap, roomId) {
+  let playerIds = roomBattleMap[roomId].players;
+  let asteroidIds = roomBattleMap[roomId].asteroids;
+  let playerDataMap = _.pick(allPlayersDataMap, playerIds);
+  let asteroids = globalAsteroidsList.filter(asteroid => asteroidIds.includes(asteroid.id));
 
   return {
-    playerDataMap: _.mapValues(relatedPlayerDataMap, ({ship, bullets, keys}) => {
+    playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
       return {
         ship: ship.get(),
         keys: {
@@ -129,8 +146,53 @@ function _mapBattleFieldData(playerDataMap, roomId) {
         },
         bullets: bullets.map(bullet => bullet.get())
       };
-    })
+    }),
+    asteroids: asteroids
+      .map(asteroid => ({
+        vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
+      }))
   };
+}
+
+function _updateAsteroids(asteroids) {
+  _.each(asteroids, asteroid => {
+    let {
+      rotationSpeed,
+      vertices,
+      center
+    } = asteroid;
+
+    asteroid.vertices = vertices
+      .map(v => rotatePoint(v, center, rotationSpeed));
+
+    // Move
+    _translatePolygon(asteroid.vertices, {
+      dx: asteroid.velocity.x,
+      dy: asteroid.velocity.y
+    });
+
+    // Screen edges
+    if (center.x > SCREEN.width + asteroid.radius) {
+      _translatePolygon(asteroid.vertices, {dx: -(SCREEN.width + 2 * asteroid.radius)});
+    }
+    else if (center.x < -asteroid.radius) {
+      _translatePolygon(asteroid.vertices, {dx: SCREEN.width + 2 * asteroid.radius});
+    }
+    if (center.y > SCREEN.height + asteroid.radius) {
+      _translatePolygon(asteroid.vertices, {dy: -(SCREEN.height + 2 * asteroid.radius)});
+    }
+    else if (center.y < -asteroid.radius) {
+      _translatePolygon(asteroid.vertices, {dy: SCREEN.height + 2 * asteroid.radius});
+    }
+
+  });
+}
+
+function _translatePolygon(vertices, {dx = 0, dy = 0}) {
+  _.each(vertices, v => {
+    v.x += dx;
+    v.y += dy;
+  });
 }
 
 function _updateBulletsData(keys, bullets, position, rotation) {
@@ -157,10 +219,10 @@ function _updateBullet(bullet) {
   bullet.position = position;
 
   // Delete if it goes out of bounds
-  if ( position.x < 0
+  if (position.x < 0
     || position.y < 0
     || position.x > SCREEN.width
-    || position.y > SCREEN.height ) {
+    || position.y > SCREEN.height) {
     bullet.destroy();
   }
 }
@@ -225,4 +287,20 @@ function _accelerate(velocity, rotation, speed) {
     x: velocity.x - Math.sin(-rotation * Math.PI / 180) * speed,
     y: velocity.y - Math.cos(-rotation * Math.PI / 180) * speed
   };
+}
+
+
+function generateAsteroids(howMany) { // todo add dependency on ship position
+  let asteroids = [];
+
+  for (let i = 0; i < howMany; i++) {
+    asteroids.push(
+      new Asteroid({
+        id: shortid.generate(),
+        radius: 50
+      })
+    );
+  }
+
+  return asteroids;
 }

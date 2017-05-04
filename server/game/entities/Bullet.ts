@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import {rotatePoint} from '../helpers';
 
 export default class Bullet {
   private _position;
@@ -11,7 +12,7 @@ export default class Bullet {
     position = null,
     rotation = null
   } = {}) {
-    let posDelta = _rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
+    let posDelta = rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
 
     this.position = {
       x: position.x + posDelta.x,
@@ -50,13 +51,14 @@ export default class Bullet {
     }
   }
 
-  destroy(){
+  destroy() {
     this.isDeleted = true;
   }
 
   get shotDate() {
     return this.date;
   }
+
 
   get position() {
     return _.clone(this._position);
@@ -66,6 +68,7 @@ export default class Bullet {
     this._position = _.clone(value);
   }
 
+
   get rotation() {
     return this._rotation;
   }
@@ -74,13 +77,15 @@ export default class Bullet {
     this._rotation = value;
   }
 
+
   get velocity() {
-    return  _.clone(this._velocity);
+    return _.clone(this._velocity);
   }
 
   set velocity(value) {
     this._velocity = _.clone(value);
   }
+
 
   set isDeleted(value) {
     this._isDeleted = value;
@@ -90,6 +95,7 @@ export default class Bullet {
     return this._isDeleted;
   }
 
+
   set date(value) {
     this._date = value;
   }
@@ -98,12 +104,3 @@ export default class Bullet {
     return this._date;
   }
 };
-
-// private methods
-
-function _rotatePoint(p, center, angle) {
-  return {
-    x: ((p.x - center.x) * Math.cos(angle) - (p.y - center.y) * Math.sin(angle)) + center.x,
-    y: ((p.x - center.x) * Math.sin(angle) + (p.y - center.y) * Math.cos(angle)) + center.y
-  };
-}

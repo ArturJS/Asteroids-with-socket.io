@@ -1,8 +1,9 @@
 import React, {Component, PropTypes} from 'react';
 import _ from 'lodash';
 import {rotatePoint} from './helpers';
-import renderShip from './renderers/ShipRenderer';
+import renderAsteroid from './renderers/AsteroidRenderer';
 import renderBullet from './renderers/BulletRenderer';
+import renderShip from './renderers/ShipRenderer';
 import Particle from './entities/Particle';
 import './BattleField.scss';
 
@@ -54,8 +55,11 @@ export default class BattleField extends Component {
     const context = this.canvas.getContext('2d');
     this.setState({context});
 
-    this.props.socket.on('updateBattleField', ({playerDataMap}) => {
+    this.props.socket.on('updateBattleField', ({playerDataMap, asteroids}) => {
       this.update({
+        asteroids: asteroids.map(asteroid => ({
+          vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
+        })),
         playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
           return {
             ship: {
@@ -152,13 +156,15 @@ export default class BattleField extends Component {
     });
   }
 
-  renderObjects({playerDataMap}) {
+  renderObjects({playerDataMap, asteroids}) {
     const {context} = this.state;
 
     _.each(playerDataMap, (playerData) => {
       renderShip(playerData.ship, context);
       _.each(playerData.bullets, bullet => renderBullet(bullet, context));
     });
+
+    _.each(asteroids, asteroid => renderAsteroid(asteroid, context));
   }
 
   render() {

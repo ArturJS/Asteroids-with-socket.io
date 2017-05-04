@@ -45,13 +45,15 @@ export default class Ship {
     }
   }
 
+
   get position() {
-    return  _.clone(this._position);
+    return _.clone(this._position);
   }
 
   set position(value) {
     this._position = _.clone(value);
   }
+
 
   get rotation() {
     return this._rotation;
@@ -61,8 +63,9 @@ export default class Ship {
     this._rotation = value;
   }
 
+
   get velocity() {
-    return  _.clone(this._velocity);
+    return _.clone(this._velocity);
   }
 
   set velocity(value) {
