@@ -6,6 +6,7 @@ import loginController from './../controllers/login.controller';
 const router = express.Router();
 
 router.post('/login', loginController.doSignIn);
+router.post('/logout', loginController.doSignOut);
 
 ///Rooms
 router.get('/rooms', roomsController.getRooms);

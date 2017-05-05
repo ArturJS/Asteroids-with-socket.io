@@ -6,7 +6,8 @@ export default {
   getRoomById,
   createRoom,
   getRoomIdsByUserId,
-  deleteRoom
+  deleteRoom,
+  deleteRoomsByUserId
 };
 
 let rooms = [];
@@ -51,5 +52,9 @@ function deleteRoom(roomId, userId) {
   _.remove(rooms, (room) => room.id === roomId);
 
   return true;
+}
+
+function deleteRoomsByUserId(userId) {
+  _.remove(rooms, (room) => room.userId === userId);
 }
 

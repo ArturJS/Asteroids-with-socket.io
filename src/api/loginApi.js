@@ -1,5 +1,6 @@
 import baseApi from './baseApi';
-import {userStore} from '../Stores';
+import roomApi from './roomApi';
+import {userStore, roomStore} from '../Stores';
 
 const loginApi = {
   doSignIn(login) {
@@ -23,11 +24,18 @@ const loginApi = {
   },
 
   doSignOut() {
-    return new Promise((res) => {
-      res();
+    return baseApi.ajax({
+      method: 'post',
+      url: '/logout'
     })
       .then(() => {
         userStore.resetUserData();
+
+        roomApi
+          .getRooms()
+          .then(rooms => {
+            roomStore.replaceRooms(rooms);
+          });
       });
   }
 };
