@@ -31,7 +31,7 @@ function setStorageData({
   playersMap,
   roomBattleMap,
   asteroidsMap
-}:IStorageData):void {
+}:IStorageData): void {
   _playersMap = playersMap;
   _roomBattleMap = roomBattleMap;
   _asteroidsMap = asteroidsMap;
@@ -47,6 +47,7 @@ function updateKeys(playerId: string, keys: IKeys): void {
 
 function addShip(playerId: string, roomId: string): void {
   _playersMap.set(playerId, {
+    number: _getPlayersCount(roomId) + 1,
     ship: new Ship(),
     keys: {
       left: 0,
@@ -89,6 +90,12 @@ function removeShip(playerId: string, roomId: string): void {
 }
 
 /// private methods
+
+function _getPlayersCount(roomId: string): number {
+  if (!_roomBattleMap.has(roomId)) return 0;
+
+  return _roomBattleMap.get(roomId).playerIds.length;
+}
 
 
 function _generateAsteroids(howMany): IAsteroid[] {

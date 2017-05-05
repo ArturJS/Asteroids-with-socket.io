@@ -1,12 +1,18 @@
-export default function renderShip(ship, context) {
+export default function renderShip(ship, context, params) {
   const {
     position,
     rotation
   } = ship;
 
+  const {
+    number
+  } = params;
+
+  let rotateAngle = rotation * Math.PI / 180;
+
   context.save();
   context.translate(position.x, position.y);
-  context.rotate(rotation * Math.PI / 180);
+  context.rotate(rotateAngle);
   context.strokeStyle = '#ffffff';
   context.fillStyle = '#000000';
   context.lineWidth = 2;
@@ -19,5 +25,13 @@ export default function renderShip(ship, context) {
   context.closePath();
   context.fill();
   context.stroke();
+
+  if (number) {
+    context.rotate(-rotateAngle);
+    context.font = '10px serif';
+    context.fillStyle = '#ffffff';
+    context.fillText(number, -3, 3);
+  }
+
   context.restore();
 }

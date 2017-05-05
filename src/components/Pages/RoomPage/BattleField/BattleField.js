@@ -60,9 +60,11 @@ export default class BattleField extends Component {
         asteroids: asteroids.map(asteroid => ({
           vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
         })),
-        playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
+        playerDataMap: _.mapValues(playerDataMap, ({number, ship, bullets, keys}, userId) => {
           return {
+            number,
             ship: {
+              userId,
               position: {
                 x: ship.position.x,
                 y: ship.position.y
@@ -159,9 +161,9 @@ export default class BattleField extends Component {
   renderObjects({playerDataMap, asteroids}) {
     const {context} = this.state;
 
-    _.each(playerDataMap, (playerData) => {
-      renderShip(playerData.ship, context);
-      _.each(playerData.bullets, bullet => renderBullet(bullet, context));
+    _.each(playerDataMap, ({number, ship, bullets}) => {
+      renderShip(ship, context, {number});
+      _.each(bullets, bullet => renderBullet(bullet, context));
     });
 
     _.each(asteroids, asteroid => renderAsteroid(asteroid, context));

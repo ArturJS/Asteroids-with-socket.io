@@ -81,8 +81,9 @@ function _mapBattleFieldData({
   });
 
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({ship, bullets, keys}) => {
+    playerDataMap: _.mapValues(playerDataMap, ({number, ship, bullets, keys}) => {
       return {
+        number,
         ship: {
           position: ship.position,
           rotation: ship.rotation,
