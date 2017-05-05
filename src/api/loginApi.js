@@ -14,7 +14,8 @@ const loginApi = {
       .then(data => {
         userStore.setUserData({
           login: data.login,
-          authToken: data.token
+          authToken: data.token,
+          userId: data.userId
         });
 
         return data;

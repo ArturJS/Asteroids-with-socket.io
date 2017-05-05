@@ -10,7 +10,8 @@ const USER_DATA_KEY = 'userData';
 class UserStore {
   @observable userData = {
     login: null,
-    authToken: null
+    authToken: null,
+    userId: null
   };
 
   constructor() {
@@ -40,7 +41,8 @@ class UserStore {
   resetUserData() {
     this.userData = {
       login: null,
-      authToken: null
+      authToken: null,
+      userId: null
     };
 
     axios.defaults.headers.common.Authorization = null;

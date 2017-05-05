@@ -10,6 +10,14 @@ class RoomStore {
   @action replaceRooms(rooms) {
     this.rooms.replace(rooms);
   }
+
+  @action deleteRoomById(roomId) {
+    let room = this.rooms.find((r) => r.id === roomId);
+
+    if (!room) return;
+
+    this.rooms.remove(room);
+  }
 }
 
 export default new RoomStore();

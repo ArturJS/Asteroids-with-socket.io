@@ -10,6 +10,7 @@ router.post('/login', loginController.doSignIn);
 ///Rooms
 router.get('/rooms', roomsController.getRooms);
 router.get('/room/:roomId', roomsController.getRoomById);
+router.delete('/room/:roomId', roomsController.deleteRoomById);
 router.post('/room', roomsController.createRoom);
 
 export default router;

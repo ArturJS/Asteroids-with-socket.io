@@ -21,6 +21,8 @@ export default (controller, passIf = (_) => true) => {
       return;
     }
 
+    req.authData = _getAuthData(token);
+
     controller(req, res);
   };
 };
@@ -29,10 +31,14 @@ export default (controller, passIf = (_) => true) => {
 
 function _isAuthorized(token) {
   try {
-    jwt.verify(token, jwtSecret);
+    _getAuthData(token);
     return true;
   }
   catch(err) {
     return false;
   }
+}
+
+function _getAuthData(token) {
+  return jwt.verify(token, jwtSecret);
 }

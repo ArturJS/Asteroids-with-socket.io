@@ -2,7 +2,7 @@ import * as shortid from 'shortid';
 import * as jwt from 'jsonwebtoken';
 import config from '../config/config';
 
-const jwtSecret = config.jwtSecret;
+const {jwtSecret} = config;
 
 export default {
   doSignIn
@@ -15,13 +15,16 @@ function doSignIn(req, res) {
     login
   } = req.body;
 
+  let userId = shortid.generate();
+
   const token = jwt.sign({
     login,
-    userId: shortid.generate()
+    userId
   }, jwtSecret);
 
   res.status(200).json({
     login,
+    userId,
     token
   });
 }

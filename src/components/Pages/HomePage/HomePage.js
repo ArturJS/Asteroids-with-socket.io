@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
 import {hashHistory} from 'react-router';
 import LoginModal from '../../Common/Modals/LoginModal';
-import homeApi from '../../../api/homeApi';
+import roomApi from '../../../api/roomApi';
 import CreateRoomForm from './CreateRoomForm';
 import './HomePage.scss';
 
@@ -10,7 +10,7 @@ import './HomePage.scss';
 @observer
 export default class HomePage extends Component {
   async componentDidMount() {
-    this.props.roomStore.replaceRooms(await homeApi.getRooms());
+    this.props.roomStore.replaceRooms(await roomApi.getRooms());
   }
 
   goToRoom = (roomId) => {
@@ -26,6 +26,23 @@ export default class HomePage extends Component {
       });
   };
 
+  onDeleteRoom = (event, roomId) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    roomApi
+      .deleteRoomById(roomId)
+      .then(() => {
+        this.props.roomStore.deleteRoomById(roomId);
+      });
+  };
+
+  canDelete = (room) => {
+    let {userId} = this.props.userStore.getUserData();
+
+    return room.userId === userId;
+  };
+
   render() {
     const {rooms} = this.props.roomStore;
 
@@ -37,7 +54,12 @@ export default class HomePage extends Component {
           <ul className="rooms-list list-unstyled">
             {rooms.map(room => (
               <li key={room.id} className="room-item" onClick={() => this.goToRoom(room.id)}>
-                {room.name}
+                <span className="room-name">
+                  {room.name}
+                </span>
+                {this.canDelete(room) &&
+                <i className="fa fa-times room-delete" onClick={(event) => this.onDeleteRoom(event, room.id)}/>
+                }
               </li>
             ))}
           </ul>
