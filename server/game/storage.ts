@@ -31,14 +31,14 @@ function setStorageData({
   playersMap,
   roomBattleMap,
   asteroidsMap
-}:IStorageData) {
+}:IStorageData):void {
   _playersMap = playersMap;
   _roomBattleMap = roomBattleMap;
   _asteroidsMap = asteroidsMap;
 }
 
 
-function updateKeys(playerId: string, keys: IKeys) {
+function updateKeys(playerId: string, keys: IKeys): void {
   if (_playersMap.has(playerId)) {
     _playersMap.get(playerId).keys = keys;
   }

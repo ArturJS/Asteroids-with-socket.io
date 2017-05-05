@@ -62,17 +62,20 @@ export default class LoginModal extends Component {
           <div className="form-group">
             <label
               htmlFor="login"
-              className="control-label">Login</label>
+              className="control-label">Nickname</label>
             <Field
               className="control-field"
               name="login"
+              autoFocus={true}
               control={inputTextCtrl}/>
           </div>
           <ErrorSummary errors={errors}/>
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary">Submit</button>
+        <div className="buttons-group">
+          <button
+            type="submit"
+            className="btn btn-primary btn-submit">Submit</button>
+        </div>
       </Form>
     );
   }
