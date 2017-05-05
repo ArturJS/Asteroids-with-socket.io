@@ -45,9 +45,9 @@ function updateKeys(playerId: string, keys: IKeys): void {
 }
 
 
-function addShip(playerId: string, roomId: string): void {
+function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
   _playersMap.set(playerId, {
-    number: _getPlayersCount(roomId) + 1,
+    login,
     ship: new Ship(),
     keys: {
       left: 0,

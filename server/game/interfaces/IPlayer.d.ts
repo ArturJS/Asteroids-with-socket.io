@@ -1,5 +1,5 @@
 interface IPlayer {
-  number: number,
+  login: string,
   ship: IShip,
   keys: IKeys,
   bullets: IBullet[]

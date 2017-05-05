@@ -32,6 +32,7 @@ export default class BattleField extends Component {
         height: 600,
         ratio: window.devicePixelRatio || 1
       },
+      playerNames: [],
       context: null
     };
 
@@ -56,13 +57,22 @@ export default class BattleField extends Component {
     this.setState({context});
 
     this.props.socket.on('updateBattleField', ({playerDataMap, asteroids}) => {
+      let playerNames = _.map(playerDataMap, ({login}, userId) => {
+        return {
+          id: userId,
+          value: login
+        };
+      });
+
       this.update({
         asteroids: asteroids.map(asteroid => ({
           vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
         })),
-        playerDataMap: _.mapValues(playerDataMap, ({number, ship, bullets, keys}, userId) => {
+        playerNames,
+        playerDataMap: _.mapValues(playerDataMap, ({login, ship, bullets, keys}, userId) => {
           return {
-            number,
+            login,
+            number: _.findIndex(playerNames, p => p.value === login) + 1,
             ship: {
               userId,
               position: {
@@ -125,6 +135,10 @@ export default class BattleField extends Component {
     this.renderObjects(battleFieldData);
 
     context.restore();
+
+    this.setState({
+      playerNames: battleFieldData.playerNames
+    });
   }
 
   updateParticles({playerDataMap}) {
@@ -170,10 +184,18 @@ export default class BattleField extends Component {
   }
 
   render() {
-    const {width, height, ratio} = this.state.screen;
+    const {screen, playerNames} = this.state;
+    const {width, height, ratio} = screen;
 
     return (
       <div className="battle-field">
+        <ol className="players-list">
+          {playerNames.map(({id, value}) => (
+            <li className="players-list__item" key={id}>
+              {value}
+            </li>
+          ))}
+        </ol>
         <canvas ref={node => {
           this.canvas = node;
         }}

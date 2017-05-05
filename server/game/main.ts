@@ -43,8 +43,8 @@ function updateKeys(playerId: string, keys: IKeys): void {
   gameStorage.updateKeys(playerId, keys);
 }
 
-function addShip(playerId: string, roomId: string): void {
-  gameStorage.addShip(playerId, roomId);
+function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
+  gameStorage.addShip({playerId, login}, roomId);
 }
 
 function removeShip(playerId: string, roomId: string): void {
@@ -81,9 +81,9 @@ function _mapBattleFieldData({
   });
 
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({number, ship, bullets, keys}) => {
+    playerDataMap: _.mapValues(playerDataMap, ({login, ship, bullets, keys}) => {
       return {
-        number,
+        login,
         ship: {
           position: ship.position,
           rotation: ship.rotation,

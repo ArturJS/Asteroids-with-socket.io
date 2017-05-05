@@ -1,8 +1,10 @@
+@import "../../../../styles/references/references";
+
 .battle-field {
 
   canvas {
     display: block;
-    background-color: #000000;
+    background-color: $c-black;
     position: absolute;
     top: 0;
     left: 50%;
@@ -49,9 +51,9 @@
   }
 
   button {
-    border: 4px solid #ffffff;
+    border: 4px solid $c-white;
     background-color: transparent;
-    color: #ffffff;
+    color: $c-white;
     font-size: 20px;
     padding: 10px 20px;
     margin: 10px;
@@ -60,7 +62,21 @@
   }
 
   button:hover {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: $c-white;
+    color: $c-black;
+  }
+
+  .players-list {
+    background-color: rgba(0,0,0,.3);
+    color: $c-white;
+    font-size: 18px;
+    position: fixed;
+    top: 100px;
+    left: 0;
+    z-index: 10;
+
+    &__item {
+      padding-right: 15px;
+    }
   }
 }

@@ -22,10 +22,13 @@ function init(io) {
 
   io.sockets.on('connection', (socket) => {
     const {roomId} = socket.handshake.query;
-    const {userId} = socket.decoded_token;
+    const {
+      userId,
+      login
+    } = socket.decoded_token;
 
     socket.join(roomId);
-    gameEngine.addShip(userId, roomId);
+    gameEngine.addShip({playerId: userId, login}, roomId);
 
     socketList.push(socket);
 
