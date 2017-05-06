@@ -93,7 +93,7 @@
     "ui-server:dev": "node scripts/start.js",
     "node_api:dev": "nodemon --exec ts-node -- ./server.ts --delay 500ms --ignore src/",
     "ui-server:prod": "http-server build --cors",
-    "node_api:prod": "ts-node server.ts",
+    "node_api:prod": "node server.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
   },
