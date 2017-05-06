@@ -1,5 +1,5 @@
 interface IShip {
-  position: IPoint,
-  rotation: number,
-  velocity: IPoint
+  position: IPoint;
+  rotation: number;
+  velocity: IPoint;
 }

@@ -47,6 +47,7 @@ function updateKeys(playerId: string, keys: IKeys): void {
 
 function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
   _playersMap.set(playerId, {
+    id: playerId,
     login,
     ship: new Ship(),
     keys: {
@@ -66,6 +67,7 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
     });
 
     _roomBattleMap.set(roomId, {
+      id: roomId,
       playerIds: [],
       asteroidIds: asteroids.map((asteroid: IAsteroid) => asteroid.id)
     });

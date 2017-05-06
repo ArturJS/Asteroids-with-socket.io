@@ -27,7 +27,9 @@ function calcNextScene({
   asteroidsMap = _.cloneDeep(asteroidsMap);
 
   let playerDataList: IPlayer[] = Array.from(playersMap.values());
+  let asteroidDataList: IAsteroid[] = Array.from(asteroidsMap.values());
 
+  // update positions for ships and bullets
   _.each(playerDataList, (playerData: IPlayer) => {
     let {
       ship,
@@ -44,6 +46,43 @@ function calcNextScene({
     _updateBulletsData(playerData.bullets, keys, position, rotation);
   });
 
+  // check collisions between bullets and asteroids inside each room
+  _.each(Array.from(roomBattleMap.values()), (room: IRoomBattle): void => {
+
+    let playersInsideRoom: IPlayer[] = _.filter(playerDataList, (player: IPlayer): boolean => {
+      return _.includes(room.playerIds, player.id);
+    });
+
+    let bulletsInsideRoom: IBullet[] = _.reduce(playersInsideRoom, (accumulator: IBullet[], player: IPlayer): IBullet[] => {
+      return [...accumulator, ...player.bullets];
+    }, []);
+
+    if (!bulletsInsideRoom.length) return;
+
+    let asteroidsInsideRoom: IAsteroid[] = _.filter(asteroidDataList, (asteroid: IAsteroid): boolean => {
+      return _.includes(room.asteroidIds, asteroid.id);
+    });
+
+    _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
+      let bullet: IBullet = null;
+
+      for (bullet of bulletsInsideRoom) {
+        let hasIntersection: boolean = _pointInsidePolygon(bullet.position, asteroid.vertices);
+
+        if (hasIntersection) {
+          let asteroidParticles: IAsteroid[] = asteroid.destroy();
+
+          _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
+
+          _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+
+          return;
+        }
+      }
+    });
+  });
+
+  // update positions for asteroids and remove that isDeleted
   _updateAsteroids(asteroidsMap);
 
   return {
@@ -55,6 +94,15 @@ function calcNextScene({
 
 /// private methods
 
+function _addAsteroids(asteroids: IAsteroid[],
+                       roomId: string,
+                       asteroidsMap: Map<string, IAsteroid>,
+                       roomBattleMap: Map<string, IRoomBattle>): void {
+  _.each(asteroids, (asteroid: IAsteroid): void => {
+    asteroidsMap.set(asteroid.id, asteroid);
+    roomBattleMap.get(roomId).asteroidIds.push(asteroid.id);
+  });
+}
 
 function _updateShipData(ship: IShip, keys: IKeys): void {
   if (keys.up) {
@@ -102,13 +150,20 @@ function _accelerate(velocity: IPoint, rotation: number, speed: number): IPoint 
 }
 
 
-function _updateAsteroids(asteroids: Map<string, IAsteroid>): void {
-  _.each(Array.from(asteroids.values()), (asteroid: IAsteroid) => {
+function _updateAsteroids(asteroidMap: Map<string, IAsteroid>): void {
+  let asteroidList: IAsteroid[] = Array.from(asteroidMap.values());
+
+  _.each(asteroidList, (asteroid: IAsteroid): void => {
     let {
       rotationSpeed,
       vertices,
       center
     }:{rotationSpeed: number, vertices: IPoint[], center: IPoint} = asteroid;
+
+    if (asteroid.isDeleted) {
+      asteroidMap.delete(asteroid.id);
+      return;
+    }
 
     asteroid.vertices = vertices
       .map((v: IPoint): IPoint => rotatePoint(v, center, rotationSpeed));
@@ -143,18 +198,18 @@ function _translatePolygon(vertices: IPoint[], {dx = 0, dy = 0}:{dx?: number, dy
   });
 }
 
-function _updateBulletsData(bullets:IBullet[], keys:IKeys, position:IPoint, rotation:number):void {
-  _.each(bullets, (bullet:IBullet):void => _updateBullet(bullet));
+function _updateBulletsData(bullets: IBullet[], keys: IKeys, position: IPoint, rotation: number): void {
+  _.each(bullets, (bullet: IBullet): void => _updateBullet(bullet));
 
   if (keys.space &&
     (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
     bullets.push(new Bullet({position, rotation}));
   }
 
-  _.remove(bullets, (bullet:IBullet):boolean => bullet.isDeleted);
+  _.remove(bullets, (bullet: IBullet): boolean => bullet.isDeleted);
 }
 
-function _updateBullet(bullet:IBullet):void {
+function _updateBullet(bullet: IBullet): void {
   let {
     position,
     velocity
@@ -173,4 +228,40 @@ function _updateBullet(bullet:IBullet):void {
     || position.y > SCREEN.height) {
     bullet.destroy();
   }
+}
+
+function _pointInsidePolygon(point: IPoint, vs: IPoint[]): boolean {
+  // ray-casting algorithm based on
+  // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+  let {
+    x, y
+  }:IPoint = point;
+
+  let inside: boolean = false;
+
+  let i: number = 0;
+  let j: number = vs.length - 1;
+
+  let xi: number;
+  let yi: number;
+
+  let xj: number;
+  let yj: number;
+
+  let intersect: boolean;
+
+  for (; i < vs.length; j = i++) {
+    xi = vs[i].x;
+    yi = vs[i].y;
+
+    xj = vs[j].x;
+    yj = vs[j].y;
+
+    intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
 }

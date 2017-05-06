@@ -1,4 +1,5 @@
 interface IRoomBattle {
-  playerIds: string[],
-  asteroidIds: string[]
+  id: string;
+  playerIds: string[];
+  asteroidIds: string[];
 }

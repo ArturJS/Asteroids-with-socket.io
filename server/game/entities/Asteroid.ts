@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as shortid from 'shortid';
 
 export default class Asteroid implements IAsteroid {
   private _id: string;
@@ -14,12 +15,14 @@ export default class Asteroid implements IAsteroid {
     rotationSpeed = null,
     radius,
     vertices = null,
+    center = null,
   }:{
     id: string,
     velocity?: IPoint,
     rotationSpeed?: number,
     radius: number,
-    vertices?: IPoint[]
+    vertices?: IPoint[],
+    center?: IPoint
   }) {
     this.id = id;
     this.radius = radius;
@@ -28,7 +31,7 @@ export default class Asteroid implements IAsteroid {
         y: _.random(-1.5, 1.5)
       };
     this.rotationSpeed = rotationSpeed || _.random(-3.0, 3.0) * Math.PI / 180; //  * Math.PI / 180 <- degrees to radians
-    this.vertices = vertices || _asteroidVertices(8, radius);
+    this.vertices = vertices || _asteroidVertices(8, radius, center);
     this.isDeleted = false;
   }
 
@@ -79,8 +82,30 @@ export default class Asteroid implements IAsteroid {
     };
   }
 
-  destroy(): void {
+  destroy(): IAsteroid[] {
     this.isDeleted = true;
+
+    let asteroidParticles: IAsteroid[] = [];
+
+    // Break into smaller asteroids
+    if (this.radius > 10) {
+      let center = this.center;
+
+      _.times(3, (): void => {
+        asteroidParticles.push(
+          new Asteroid({
+            id: shortid.generate(),
+            radius: this.radius / 2,
+            center: {
+              x: _.random(-10, 20) + center.x,
+              y: _.random(-10, 20) + center.y
+            }
+          })
+        );
+      });
+    }
+
+    return asteroidParticles;
   }
 
 
@@ -145,13 +170,19 @@ export default class Asteroid implements IAsteroid {
 
 // private methods
 
-function _asteroidVertices(count: number, radius: number): IPoint[] {
+function _asteroidVertices(count: number, radius: number, center?: IPoint): IPoint[] {
   let vertices: IPoint[] = [];
+
+  center = center || {x: 0, y: 0};
 
   _.times(count, (i: number) => {
     vertices.push({
-      x: (-Math.sin((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * radius,
-      y: (-Math.cos((360 / count) * i * Math.PI / 180) + Math.round(Math.random() * 2 - 1) * Math.random() / 3) * radius
+      x: (-Math.sin((360 / count) * i * Math.PI / 180)
+      + Math.round(Math.random() * 2 - 1) * Math.random() / 3)
+      * radius + center.x - radius,
+      y: (-Math.cos((360 / count) * i * Math.PI / 180)
+      + Math.round(Math.random() * 2 - 1) * Math.random() / 3)
+      * radius + center.y - radius
     });
   });
 

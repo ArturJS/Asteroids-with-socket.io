@@ -81,8 +81,9 @@ function _mapBattleFieldData({
   });
 
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({login, ship, bullets, keys}) => {
+    playerDataMap: _.mapValues(playerDataMap, ({id, login, ship, bullets, keys}) => {
       return {
+        id,
         login,
         ship: {
           position: ship.position,

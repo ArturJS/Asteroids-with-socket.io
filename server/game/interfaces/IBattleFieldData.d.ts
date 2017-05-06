@@ -1,4 +1,4 @@
 interface IBattleFieldData {
-  playerDataMap:{[index: string]: IPlayer},
-  asteroids:{vertices:IPoint[]}[]
+  playerDataMap:{[index: string]: IPlayer};
+  asteroids:{vertices:IPoint[]}[];
 }
