@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {inject} from 'mobx-react';
 import io from 'socket.io-client';
 import roomApi from '../../../api/roomApi';
+import config from '../../../api/apiConfig';
 import BattleField from './BattleField';
 import './RoomPage.scss';
 
@@ -15,7 +16,7 @@ export default class RoomPage extends Component {
     const {authToken} = this.props.userStore.getUserData();
     const {roomId} = this.props.params;
 
-    this.socket = io('http://localhost:3333', {
+    this.socket = io(config.baseSocketURL, {
       'query': `token=${authToken}&roomId=${roomId}`
     });
   }
