@@ -24,6 +24,7 @@ app.use(noCacheMiddleware);
 // init routes
 app.use('/api', apiRoute);
 
+app.use('/', express.static(__dirname + '/build'));
 
 //==========Socket.IO===========
 sockets.init(io);

@@ -89,11 +89,10 @@
     "typescript": "2.3.2"
   },
   "scripts": {
-    "start": "concurrently --kill-others \"npm run ui-server:prod\" \"npm run node_api:prod\"",
-    "ui-server:dev": "node scripts/start.js",
+    "start": "npm run node_api:prod",
+    "ui-server": "node scripts/start.js",
     "node_api:dev": "nodemon --exec ts-node -- ./server.ts --delay 500ms --ignore src/",
-    "ui-server:prod": "http-server build --cors",
-    "node_api:prod": "node server.js",
+    "node_api:prod": "ts-node server.ts",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js --env=jsdom"
   },
