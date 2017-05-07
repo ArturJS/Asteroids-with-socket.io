@@ -93,13 +93,6 @@ function removeShip(playerId: string, roomId: string): void {
 
 /// private methods
 
-function _getPlayersCount(roomId: string): number {
-  if (!_roomBattleMap.has(roomId)) return 0;
-
-  return _roomBattleMap.get(roomId).playerIds.length;
-}
-
-
 function _generateAsteroids(howMany): IAsteroid[] {
   let asteroids: IAsteroid[] = [];
 

@@ -71,6 +71,8 @@ function calcNextScene({
 
           _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
 
+          bullet.destroy();
+
           _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
 
           return;
