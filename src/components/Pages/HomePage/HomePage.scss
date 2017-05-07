@@ -5,11 +5,16 @@
   flex: 1 1 auto;
 	flex-direction: column;
 
+  .battle-field-autoplay {
+    z-index: -1;
+  }
+
   .page-content {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
     padding: 0 15px;
+    background-color: rgba(0, 0, 0, 0.2);
   }
 
   .rooms-list {
@@ -21,10 +26,11 @@
       cursor: pointer;
       overflow: hidden;
       transition: box-shadow 0.15s linear;
-      box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 0 2px rgba(33, 150, 243, 1);
+      border: 1px solid #2196F3;
 
       &:hover {
-        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 25px rgba(33, 150, 243, 1);
       }
     }
 

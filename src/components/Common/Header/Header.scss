@@ -1,8 +1,8 @@
 @import '../../../styles/references/_references';
 
 .header {
-  $c-header-bg: $c-desert-storm;
-  $c-header-border: $c-quill-gray;
+  $c-header-bg: rgba(0,0,0,.6);
+  $c-header-border: rgba(255, 152, 0, .8);
   $header-height: 40px;
 
   margin-bottom: 20px;
@@ -31,7 +31,7 @@
     display: inline-flex;
     line-height: $header-height;
     text-decoration: none;
-    color: rgba(0,0,0,0.6);
+    color: rgba(255, 193, 7, .8);
     transition: color 0.25s ease-out;
 
     &__text {
@@ -41,7 +41,7 @@
 
     &:hover,
     &:focus {
-      color: rgba(0,0,0,0.9);
+      color: rgba(255, 193, 7, 1);
 
       .fa:before {
         transform: translateX(0);

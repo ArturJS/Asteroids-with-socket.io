@@ -4,6 +4,7 @@ import {hashHistory} from 'react-router';
 import LoginModal from '../../Common/Modals/LoginModal';
 import roomApi from '../../../api/roomApi';
 import CreateRoomForm from './CreateRoomForm';
+import BattleFieldAutoplay from './BattleFieldAutoplay';
 import './HomePage.scss';
 
 @inject('roomStore', 'userStore', 'modalStore')
@@ -48,6 +49,7 @@ export default class HomePage extends Component {
 
     return (
       <div className="home-page">
+        <BattleFieldAutoplay />
         <div className="page-content">
           <h2 className="page-title">Battle rooms</h2>
           <CreateRoomForm />
