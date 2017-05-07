@@ -1,4 +1,5 @@
 {
+  "homepage": "https://asteroids-with-socketio.herokuapp.com/",
   "name": "asteroids_socket.io",
   "version": "0.1.0",
   "devDependencies": {
