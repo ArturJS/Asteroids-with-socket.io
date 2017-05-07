@@ -1,8 +1,11 @@
 import React, {Component} from 'react';
+import {inject, observer} from 'mobx-react';
 import {Link, browserHistory} from 'react-router';
 import UserAuthState from '../UserAuthState';
 import './Header.scss';
 
+@inject('roomStore')
+@observer
 export default class Header extends Component {
   state = {
     isRoomPage: false
@@ -25,6 +28,7 @@ export default class Header extends Component {
 
   render() {
     const {isRoomPage} = this.state;
+    const {currentRoom} = this.props.roomStore;
 
     return (
       <nav className="header navbar navbar-default navbar-fixed-top">
@@ -36,6 +40,11 @@ export default class Header extends Component {
               Back to home
             </span>
           </Link>
+          }
+          {isRoomPage &&
+            <div className="room-name">
+              Room: {currentRoom.name}
+            </div>
           }
           <UserAuthState/>
         </div>

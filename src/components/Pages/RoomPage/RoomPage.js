@@ -6,12 +6,8 @@ import config from '../../../api/apiConfig';
 import BattleField from './BattleField';
 import './RoomPage.scss';
 
-@inject('userStore')
+@inject('userStore', 'roomStore')
 export default class RoomPage extends Component {
-  state = {
-    room: {}
-  };
-
   componentWillMount() {
     const {authToken} = this.props.userStore.getUserData();
     const {roomId} = this.props.params;
@@ -23,7 +19,7 @@ export default class RoomPage extends Component {
 
   componentDidMount() {
     roomApi.getRoomById(this.props.params.roomId)
-      .then(room => this.setState({room}));
+      .then(room => this.props.roomStore.currentRoom = room);
   }
 
   componentWillUnmount() {
@@ -31,11 +27,8 @@ export default class RoomPage extends Component {
   }
 
   render() {
-    const {room} = this.state;
-
     return (
       <div className="room-page">
-        <h2 className="page-title">{room.name}</h2>
         <BattleField socket={this.socket} />
       </div>
     );

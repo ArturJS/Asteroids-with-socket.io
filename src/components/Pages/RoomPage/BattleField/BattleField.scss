@@ -66,17 +66,26 @@
     color: $c-black;
   }
 
-  .players-list {
-    background-color: rgba(0,0,0,.3);
+  .players {
+    background-color: rgba(0, 0, 0, .3);
     color: $c-white;
     font-size: 18px;
     position: fixed;
     top: 100px;
     left: 0;
     z-index: 10;
+    padding-right: 10px;
 
-    &__item {
-      padding-right: 15px;
+    &-heading {
+      padding-left: 10px;
+    }
+
+    &-list {
+      margin: 0;
+
+      &__item {
+        padding-right: 15px;
+      }
     }
   }
 }

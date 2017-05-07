@@ -2,6 +2,7 @@ import {observable, action} from 'mobx';
 
 class RoomStore {
   @observable rooms = [];
+  @observable currentRoom = {};
 
   @action addRoom(room) {
     this.rooms.push(room);

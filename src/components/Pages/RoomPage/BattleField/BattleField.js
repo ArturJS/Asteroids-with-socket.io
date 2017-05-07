@@ -189,13 +189,18 @@ export default class BattleField extends Component {
 
     return (
       <div className="battle-field">
-        <ol className="players-list">
-          {playerNames.map(({id, value}) => (
-            <li className="players-list__item" key={id}>
-              {value}
-            </li>
-          ))}
-        </ol>
+        <div className="players">
+          <div className="players-heading">
+            Players:
+          </div>
+          <ol className="players-list">
+            {playerNames.map(({id, value}) => (
+              <li className="players-list__item" key={id}>
+                {value}
+              </li>
+            ))}
+          </ol>
+        </div>
         <canvas ref={node => {
           this.canvas = node;
         }}

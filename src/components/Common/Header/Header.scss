@@ -8,6 +8,7 @@
   margin-bottom: 20px;
   border-bottom: 3px solid $c-header-border;
   display: block;
+  font-size: 20px;
 
   .navbar-header {
     display: flex;
@@ -29,7 +30,6 @@
     height: $header-height;
     display: inline-flex;
     line-height: $header-height;
-    font-size: 20px;
     text-decoration: none;
     color: rgba(0,0,0,0.6);
     transition: color 0.25s ease-out;
@@ -78,5 +78,11 @@
 
   &.navbar-default {
     background-color: $c-header-bg;
+  }
+
+  .room-name {
+    flex-grow: 1;
+    line-height: $header-height;
+    text-align: center;
   }
 }
