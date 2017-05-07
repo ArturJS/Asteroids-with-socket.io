@@ -1,49 +1,82 @@
 @import '../../../styles/references/_references';
 
 .header {
-	$c-header-bg: $c-desert-storm;
-	$c-header-border: $c-quill-gray;
+  $c-header-bg: $c-desert-storm;
+  $c-header-border: $c-quill-gray;
   $header-height: 40px;
 
-	margin-bottom: 20px;
-	border-bottom: 3px solid $c-header-border;
-	display: block;
+  margin-bottom: 20px;
+  border-bottom: 3px solid $c-header-border;
+  display: block;
 
-	.navbar-header {
+  .navbar-header {
     display: flex;
-		width: 80%;
-		margin: 0 auto;
-		padding-left: 15px;
+    width: 80%;
+    margin: 0 auto;
+    padding-left: 15px;
+    height: 100%;
 
     .user-auth-state {
       margin-left: auto;
     }
-	}
+  }
 
-	.container {
-		padding: 0 15px;
-	}
+  .container {
+    padding: 0 15px;
+  }
 
-	.navbar-brand {
-		padding: 20px 0 0;
-		height: $header-height;
-		display: inline-block;
-	}
+  .navbar-brand {
+    height: $header-height;
+    display: inline-flex;
+    line-height: $header-height;
+    font-size: 20px;
+    text-decoration: none;
+    color: rgba(0,0,0,0.6);
+    transition: color 0.25s ease-out;
 
-	&.navbar-fixed-top {
-		position: fixed;
-		top: 0;
-		right: 0;
-		left: 0;
-		z-index: 1030;
-	}
-	&.navbar {
-		height: $header-height;
-	}
-	&.navbar-default {
-		background-color: $c-header-bg;
-	}
-	.navbar-left {
-		display: inline-block;
-	}
+    &__text {
+      display: inline-block;
+      height: 100%;
+    }
+
+    &:hover,
+    &:focus {
+      color: rgba(0,0,0,0.9);
+
+      .fa:before {
+        transform: translateX(0);
+      }
+    }
+
+    .fa {
+      overflow: hidden;
+      padding: 0;
+      margin-right: 5px;
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+
+      &:before {
+        transition: transform 0.25s ease-out;
+        transform: translateX(100%);
+        will-change: transform;
+      }
+    }
+  }
+
+  &.navbar-fixed-top {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+  }
+
+  &.navbar {
+    height: $header-height;
+  }
+
+  &.navbar-default {
+    background-color: $c-header-bg;
+  }
 }
