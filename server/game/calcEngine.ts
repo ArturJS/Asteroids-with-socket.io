@@ -22,9 +22,6 @@ function calcNextScene({
   roomBattleMap,
   asteroidsMap
 }:IScene): IScene {
-  playersMap = _.cloneDeep(playersMap);
-  roomBattleMap = _.cloneDeep(roomBattleMap);
-  asteroidsMap = _.cloneDeep(asteroidsMap);
 
   let playerDataList: IPlayer[] = Array.from(playersMap.values());
   let asteroidDataList: IAsteroid[] = Array.from(asteroidsMap.values());
