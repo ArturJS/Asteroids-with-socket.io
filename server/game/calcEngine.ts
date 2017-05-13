@@ -46,6 +46,7 @@ function calcNextScene({
   // check collisions between bullets and asteroids inside each room
   _.each(Array.from(roomBattleMap.values()), (room: IRoomBattle): void => {
 
+    // todo add method _getObjectsInsideRoom : {bulletsInsideRoom, shipsInsideRoom, asteroidsInsideRoom}
     let playersInsideRoom: IPlayer[] = _.filter(playerDataList, (player: IPlayer): boolean => {
       return _.includes(room.playerIds, player.id);
     });
@@ -54,7 +55,7 @@ function calcNextScene({
       return [...accumulator, ...player.bullets];
     }, []);
 
-    if (!bulletsInsideRoom.length) return;
+    let shipsInsideRoom: IShip[] = playersInsideRoom.map((player: IPlayer): IShip => player.ship);
 
     let asteroidsInsideRoom: IAsteroid[] = _.filter(asteroidDataList, (asteroid: IAsteroid): boolean => {
       return _.includes(room.asteroidIds, asteroid.id);
@@ -67,13 +68,23 @@ function calcNextScene({
         let hasIntersection: boolean = _pointInsidePolygon(bullet.position, asteroid.vertices);
 
         if (hasIntersection) {
-          let asteroidParticles: IAsteroid[] = asteroid.destroy();
-
-          _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
-
+          _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
           bullet.destroy();
 
-          _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+          return;
+        }
+      }
+
+      let ship: IShip = null;
+
+      for (ship of shipsInsideRoom) {
+        let vertices: IPoint[] = ship.vertices;
+
+        // todo add check on possible intersection (by ship and asteroid radius)
+        let hasIntersection: boolean = _polygonsHaveIntersections(vertices, asteroid.vertices);
+
+        if (hasIntersection) {
+          _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
 
           return;
         }
@@ -92,6 +103,24 @@ function calcNextScene({
 }
 
 /// private methods
+
+function _destroyAsteroid({
+  asteroid,
+  roomBattleMap,
+  room,
+  asteroidsMap
+}:{
+  asteroid: IAsteroid,
+  roomBattleMap: Map<string, IRoomBattle>,
+  room: IRoomBattle,
+  asteroidsMap: Map<string, IAsteroid>
+}): void {
+  let asteroidParticles: IAsteroid[] = asteroid.destroy();
+
+  _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
+
+  _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+}
 
 function _addAsteroids(asteroids: IAsteroid[],
                        roomId: string,
@@ -227,6 +256,24 @@ function _updateBullet(bullet: IBullet): void {
     || position.y > SCREEN.height) {
     bullet.destroy();
   }
+}
+
+function _polygonsHaveIntersections(polygonA: IPoint[], polygonB: IPoint[]): boolean {
+  let point: IPoint = null;
+
+  for (point of polygonA) {
+    if (_pointInsidePolygon(point, polygonB)) {
+      return true;
+    }
+  }
+
+  for (point of polygonB) {
+    if (_pointInsidePolygon(point, polygonA)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function _pointInsidePolygon(point: IPoint, vs: IPoint[]): boolean {
