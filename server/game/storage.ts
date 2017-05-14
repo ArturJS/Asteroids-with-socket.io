@@ -69,7 +69,8 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
     _roomBattleMap.set(roomId, {
       id: roomId,
       playerIds: [],
-      asteroidIds: asteroids.map((asteroid: IAsteroid) => asteroid.id)
+      asteroidIds: asteroids.map((asteroid: IAsteroid) => asteroid.id),
+      explosions: []
     });
   }
 
@@ -79,6 +80,8 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
 
 function removeShip(playerId: string, roomId: string): void {
   _playersMap.delete(playerId);
+
+  if (!_roomBattleMap.has(roomId)) return;
 
   _.remove(_roomBattleMap.get(roomId).playerIds, (pId: string) => pId === playerId);
 

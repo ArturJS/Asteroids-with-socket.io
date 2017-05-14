@@ -65,8 +65,9 @@ function _mapBattleFieldData({
 
   let {
     playerIds,
-    asteroidIds
-  }:{playerIds: string[], asteroidIds: string[]} = roomBattleMap.get(roomId);
+    asteroidIds,
+    explosions
+  }:{playerIds: string[], asteroidIds: string[], explosions: IExplosion[]} = roomBattleMap.get(roomId);
 
   let playerDataMap: {[index: string]: IPlayer} = {};
 
@@ -108,6 +109,10 @@ function _mapBattleFieldData({
     asteroids: asteroids
       .map((asteroid: IAsteroid): {vertices: IPoint[]} => ({
         vertices: asteroid.vertices.map((v: IPoint): IPoint => ({x: v.x, y: v.y}))
-      }))
+      })),
+    explosions: explosions.map((explosion: IExplosion) => ({
+      position: explosion.position,
+      radius: explosion.radius
+    }))
   };
 }

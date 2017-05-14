@@ -56,7 +56,7 @@ export default class BattleField extends Component {
     const context = this.canvas.getContext('2d');
     this.setState({context});
 
-    this.props.socket.on('updateBattleField', ({playerDataMap, asteroids}) => {
+    this.props.socket.on('updateBattleField', ({playerDataMap, asteroids, explosions}) => {
       let playerNames = _.map(playerDataMap, ({login}, userId) => {
         return {
           id: userId,
@@ -67,6 +67,13 @@ export default class BattleField extends Component {
       this.update({
         asteroids: asteroids.map(asteroid => ({
           vertices: asteroid.vertices.map(v => ({x: v.x, y: v.y}))
+        })),
+        explosions: explosions.map(explosion => ({
+          position: {
+            x: explosion.position.x,
+            y: explosion.position.y
+          },
+          radius: explosion.radius
         })),
         playerNames,
         playerDataMap: _.mapValues(playerDataMap, ({login, ship, bullets, keys}, userId) => {
@@ -132,6 +139,8 @@ export default class BattleField extends Component {
 
     this.updateParticles(battleFieldData);
 
+    _.each(battleFieldData.explosions, explosion => this.createExplosion(explosion));
+
     this.renderObjects(battleFieldData);
 
     context.restore();
@@ -152,7 +161,7 @@ export default class BattleField extends Component {
   createParticles(playerDataMap) {
     _.each(playerDataMap, ({ship, keys}) => {
       if (keys.up) {
-        let posDelta = rotatePoint({x:0, y:-10}, {x:0,y:0}, (ship.rotation-180) * Math.PI / 180);
+        let posDelta = rotatePoint({x: 0, y: -10}, {x: 0, y: 0}, (ship.rotation - 180) * Math.PI / 180);
 
         this.particles.push(
           new Particle({
@@ -169,6 +178,25 @@ export default class BattleField extends Component {
           })
         );
       }
+    });
+  }
+
+  createExplosion({position, radius}) {
+    _.times(radius, () => {
+      this.particles.push(
+        new Particle({
+          lifeSpan: _.random(60, 100),
+          size: _.random(1, 3),
+          position: {
+            x: position.x + _.random(-radius / 4, radius / 4),
+            y: position.y + _.random(-radius / 4, radius / 4)
+          },
+          velocity: {
+            x: _.random(-1.5, 1.5),
+            y: _.random(-1.5, 1.5)
+          }
+        })
+      );
     });
   }
 

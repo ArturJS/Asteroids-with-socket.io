@@ -23,6 +23,8 @@ function calcNextScene({
   asteroidsMap
 }:IScene): IScene {
 
+  _removeAllExplosions(roomBattleMap);
+
   let playerDataList: IPlayer[] = Array.from(playersMap.values());
   let asteroidDataList: IAsteroid[] = Array.from(asteroidsMap.values());
 
@@ -168,7 +170,24 @@ function _destroyAsteroid({
 
   _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
 
+  _addExplosionsInRoom(asteroid, room.id, roomBattleMap);
+
   _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+}
+
+function _addExplosionsInRoom(asteroid: IAsteroid, roomId: string, roomBattleMap: Map<string, IRoomBattle>): void {
+  roomBattleMap.get(roomId).explosions.push({
+    position: asteroid.center,
+    radius: asteroid.radius
+  });
+}
+
+function _removeAllExplosions(roomBattleMap: Map<string, IRoomBattle>) {
+  let roomBattle: IRoomBattle = null;
+
+  for (roomBattle of roomBattleMap.values()) {
+    roomBattle.explosions.splice(0, roomBattle.explosions.length);
+  }
 }
 
 function _addAsteroids(asteroids: IAsteroid[],
