@@ -43,24 +43,19 @@ function calcNextScene({
     _updateBulletsData(playerData.bullets, keys, position, rotation);
   });
 
-  // check collisions between bullets and asteroids inside each room
+  // collisions check inside each room
   _.each(Array.from(roomBattleMap.values()), (room: IRoomBattle): void => {
+    let {
+      bulletsInsideRoom,
+      shipsInsideRoom,
+      asteroidsInsideRoom
+    }: {
+      bulletsInsideRoom: IBullet[],
+      shipsInsideRoom: IShip[],
+      asteroidsInsideRoom: IAsteroid[]
+    } = _getObjectsInsideRoom({room, playerDataList, asteroidDataList});
 
-    // todo add method _getObjectsInsideRoom : {bulletsInsideRoom, shipsInsideRoom, asteroidsInsideRoom}
-    let playersInsideRoom: IPlayer[] = _.filter(playerDataList, (player: IPlayer): boolean => {
-      return _.includes(room.playerIds, player.id);
-    });
-
-    let bulletsInsideRoom: IBullet[] = _.reduce(playersInsideRoom, (accumulator: IBullet[], player: IPlayer): IBullet[] => {
-      return [...accumulator, ...player.bullets];
-    }, []);
-
-    let shipsInsideRoom: IShip[] = playersInsideRoom.map((player: IPlayer): IShip => player.ship);
-
-    let asteroidsInsideRoom: IAsteroid[] = _.filter(asteroidDataList, (asteroid: IAsteroid): boolean => {
-      return _.includes(room.asteroidIds, asteroid.id);
-    });
-
+    // check collisions between Bullets and Asteroids
     _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
       let bullet: IBullet = null;
 
@@ -74,22 +69,23 @@ function calcNextScene({
           return;
         }
       }
+    });
 
-      let ship: IShip = null;
+    // check collisions between Ships and Asteroids
+    _.each(shipsInsideRoom, (ship: IShip): void => {
+      let nearestToShipAsteroids: IAsteroid[] = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
+      let vertices: IPoint[] = ship.vertices;
 
-      for (ship of shipsInsideRoom) {
-        let vertices: IPoint[] = ship.vertices;
-
-        // todo add check on possible intersection (by ship and asteroid radius)
+      _.each(nearestToShipAsteroids, (asteroid: IAsteroid): void => {
         let hasIntersection: boolean = _polygonsHaveIntersections(vertices, asteroid.vertices);
 
         if (hasIntersection) {
           _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
-
-          return;
         }
-      }
+      });
     });
+
+
   });
 
   // update positions for asteroids and remove that isDeleted
@@ -103,6 +99,59 @@ function calcNextScene({
 }
 
 /// private methods
+
+function _getNearestToShipAsteroids(ship: IShip, asteroidsInsideRoom: IAsteroid[]): IAsteroid[] {
+  let nearestToShipAsteroids: IAsteroid[] = [];
+  const shipRadius: number = 20;
+  const shipPos: IPoint = ship.position;
+
+  _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
+    const asteroidPos: IPoint = asteroid.center;
+    const asteroidRadius: number = asteroid.radius;
+    if (
+      Math.pow(asteroidPos.x - shipPos.x, 2) +
+      Math.pow(asteroidPos.y - shipPos.y, 2) <= Math.pow(shipRadius + asteroidRadius, 2)
+    ) {
+      nearestToShipAsteroids.push(asteroid);
+    }
+  });
+
+  return nearestToShipAsteroids;
+}
+
+function _getObjectsInsideRoom({
+  room,
+  playerDataList,
+  asteroidDataList
+}:{
+  room: IRoomBattle,
+  playerDataList: IPlayer[],
+  asteroidDataList: IAsteroid[]
+}): {
+  bulletsInsideRoom: IBullet[],
+  shipsInsideRoom: IShip[],
+  asteroidsInsideRoom: IAsteroid[]
+} {
+  let playersInsideRoom: IPlayer[] = _.filter(playerDataList, (player: IPlayer): boolean => {
+    return _.includes(room.playerIds, player.id);
+  });
+
+  let bulletsInsideRoom: IBullet[] = _.reduce(playersInsideRoom, (accumulator: IBullet[], player: IPlayer): IBullet[] => {
+    return [...accumulator, ...player.bullets];
+  }, []);
+
+  let shipsInsideRoom: IShip[] = playersInsideRoom.map((player: IPlayer): IShip => player.ship);
+
+  let asteroidsInsideRoom: IAsteroid[] = _.filter(asteroidDataList, (asteroid: IAsteroid): boolean => {
+    return _.includes(room.asteroidIds, asteroid.id);
+  });
+
+  return {
+    bulletsInsideRoom,
+    shipsInsideRoom,
+    asteroidsInsideRoom
+  };
+}
 
 function _destroyAsteroid({
   asteroid,
