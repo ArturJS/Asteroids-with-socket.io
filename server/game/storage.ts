@@ -49,13 +49,14 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
   _playersMap.set(playerId, {
     id: playerId,
     login,
-    ship: new Ship(),
+    ship: new Ship({playerId}),
     keys: {
       left: 0,
       right: 0,
       up: 0,
       space: 0
     },
+    score: 0,
     bullets: []
   });
 

@@ -1,4 +1,5 @@
 interface IBullet {
+  playerId: string;
   position: IPoint;
   rotation: number;
   velocity: IPoint;

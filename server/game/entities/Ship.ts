@@ -2,19 +2,23 @@ import * as _ from 'lodash';
 import {rotatePoint} from '../helpers';
 
 export default class Ship implements IShip {
+  private _playerId: string;
   private _position: IPoint;
   private _rotation: number;
   private _velocity: IPoint;
 
   constructor({
+    playerId,
     position = null,
     rotation = null,
     velocity = null
   }:{
+    playerId: string,
     position?: IPoint,
     rotation?: number,
     velocity?: IPoint
-  } = {}) {
+  }) {
+    this.playerId = playerId;
     this.position = position || {
         x: 450,
         y: 300
@@ -48,6 +52,7 @@ export default class Ship implements IShip {
 
   get(): IShip {
     return {
+      playerId: this.playerId,
       position: this.position,
       rotation: this.rotation,
       velocity: this.velocity
@@ -89,6 +94,14 @@ export default class Ship implements IShip {
     });
 
     return vertices;
+  }
+
+  get playerId(): string {
+    return this._playerId;
+  }
+
+  set playerId(value: string) {
+    this._playerId = value;
   }
 
 

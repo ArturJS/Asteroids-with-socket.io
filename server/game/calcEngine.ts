@@ -32,8 +32,9 @@ function calcNextScene({
   _.each(playerDataList, (playerData: IPlayer) => {
     let {
       ship,
-      keys
-    }:{ship: IShip, keys: IKeys} = playerData;
+      keys,
+      id
+    }:{ship: IShip, keys: IKeys, id: string} = playerData;
 
     _updateShipData(ship, keys);
 
@@ -42,7 +43,7 @@ function calcNextScene({
       rotation
     }:{position: IPoint, rotation: number} = ship;
 
-    _updateBulletsData(playerData.bullets, keys, position, rotation);
+    _updateBulletsData(playerData.bullets, keys, position, rotation, id);
   });
 
   // collisions check inside each room
@@ -66,6 +67,9 @@ function calcNextScene({
 
         if (hasIntersection) {
           _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
+
+          _addScoreByPlayerId(playersMap, bullet.playerId);
+
           bullet.destroy();
 
           return;
@@ -83,6 +87,8 @@ function calcNextScene({
 
         if (hasIntersection) {
           _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
+
+          _addScoreByPlayerId(playersMap, ship.playerId);
         }
       });
     });
@@ -101,6 +107,12 @@ function calcNextScene({
 }
 
 /// private methods
+
+function _addScoreByPlayerId(playersMap: Map<string, IPlayer>, playerId: string): void {
+  if (playersMap.has(playerId)) {
+    playersMap.get(playerId).score++;
+  }
+}
 
 function _getNearestToShipAsteroids(ship: IShip, asteroidsInsideRoom: IAsteroid[]): IAsteroid[] {
   let nearestToShipAsteroids: IAsteroid[] = [];
@@ -294,12 +306,12 @@ function _translatePolygon(vertices: IPoint[], {dx = 0, dy = 0}:{dx?: number, dy
   });
 }
 
-function _updateBulletsData(bullets: IBullet[], keys: IKeys, position: IPoint, rotation: number): void {
+function _updateBulletsData(bullets: IBullet[], keys: IKeys, position: IPoint, rotation: number, playerId: string): void {
   _.each(bullets, (bullet: IBullet): void => _updateBullet(bullet));
 
   if (keys.space &&
     (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
-    bullets.push(new Bullet({position, rotation}));
+    bullets.push(new Bullet({playerId, position, rotation}));
   }
 
   _.remove(bullets, (bullet: IBullet): boolean => bullet.isDeleted);

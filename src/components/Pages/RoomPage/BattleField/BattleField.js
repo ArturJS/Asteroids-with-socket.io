@@ -7,7 +7,6 @@ import renderShip from './renderers/ShipRenderer';
 import Particle from './entities/Particle';
 import './BattleField.scss';
 
-/*eslint-disable */
 const KEY = {
   LEFT: 37,
   RIGHT: 39,
@@ -57,10 +56,11 @@ export default class BattleField extends Component {
     this.setState({context});
 
     this.props.socket.on('updateBattleField', ({playerDataMap, asteroids, explosions}) => {
-      let playerNames = _.map(playerDataMap, ({login}, userId) => {
+      let playerNames = _.map(playerDataMap, ({login, score}, userId) => {
         return {
           id: userId,
-          value: login
+          value: login,
+          score
         };
       });
 
@@ -222,20 +222,20 @@ export default class BattleField extends Component {
             Players:
           </div>
           <ol className="players-list">
-            {playerNames.map(({id, value}) => (
+            {playerNames.map(({id, value, score}) => (
               <li className="players-list__item" key={id}>
-                {value}
+                {value} : {score}
               </li>
             ))}
           </ol>
         </div>
-        <canvas ref={node => {
-          this.canvas = node;
-        }}
-                width={width * ratio}
-                height={height * ratio}/>
+        <canvas
+          ref={node => {
+            this.canvas = node;
+          }}
+          width={width * ratio}
+          height={height * ratio}/>
       </div>
     );
   }
 }
-/*eslint-enable */

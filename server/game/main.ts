@@ -82,11 +82,12 @@ function _mapBattleFieldData({
   });
 
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({id, login, ship, bullets, keys}) => {
+    playerDataMap: _.mapValues(playerDataMap, ({id, login, ship, bullets, score, keys}) => {
       return {
         id,
         login,
         ship: {
+          playerId: ship.playerId,
           position: ship.position,
           rotation: ship.rotation,
           velocity: ship.velocity
@@ -97,7 +98,9 @@ function _mapBattleFieldData({
           up: keys.up,
           space: keys.space
         },
+        score: score,
         bullets: bullets.map((bullet: IBullet) => ({
+          playerId: id,
           position: bullet.position,
           rotation: bullet.rotation,
           velocity: bullet.velocity,

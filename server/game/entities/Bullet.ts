@@ -1,6 +1,7 @@
 import {rotatePoint} from '../helpers';
 
 export default class Bullet implements IBullet {
+  private _playerId: string;
   private _position: IPoint;
   private _rotation: number;
   private _velocity: IPoint;
@@ -8,13 +9,17 @@ export default class Bullet implements IBullet {
   private _date: number;
 
   constructor({
+    playerId,
     position,
     rotation
   }:{
+    playerId: string,
     position: IPoint,
     rotation: number
   }) {
     let posDelta: IPoint = rotatePoint({x: 0, y: -20}, {x: 0, y: 0}, rotation * Math.PI / 180);
+
+    this.playerId = playerId;
 
     this.position = {
       x: position.x + posDelta.x,
@@ -51,6 +56,7 @@ export default class Bullet implements IBullet {
 
   get(): IBullet {
     return {
+      playerId: this.playerId,
       position: this.position,
       rotation: this.rotation,
       velocity: this.velocity,
@@ -61,6 +67,14 @@ export default class Bullet implements IBullet {
 
   destroy(): void {
     this.isDeleted = true;
+  }
+
+  get playerId(): string {
+    return this._playerId;
+  }
+
+  set playerId(value: string) {
+    this._playerId = value;
   }
 
 

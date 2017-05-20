@@ -3,5 +3,6 @@ interface IPlayer {
   login: string;
   ship: IShip;
   keys: IKeys;
+  score: number;
   bullets: IBullet[];
 }
