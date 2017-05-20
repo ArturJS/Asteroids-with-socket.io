@@ -84,5 +84,6 @@
     flex-grow: 1;
     line-height: $header-height;
     text-align: center;
+    @include ellipsis();
   }
 }
