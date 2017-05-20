@@ -56,7 +56,7 @@ export default class HomePage extends Component {
           <ul className="rooms-list list-unstyled">
             {rooms.map(room => (
               <li key={room.id} className="room-item" onClick={() => this.goToRoom(room.id)}>
-                <span className="room-name">
+                <span className="room-name" title={room.name}>
                   {room.name}
                 </span>
                 {this.canDelete(room) &&

@@ -1,6 +1,7 @@
 @import "../../../styles/references/references";
 
 .home-page {
+  width: 100%;
 	display: flex;
   flex: 1 1 auto;
 	flex-direction: column;
@@ -18,8 +19,10 @@
   }
 
   .rooms-list {
+    width: 100%;
 
     .room-item {
+      width: 100%;
       display: flex;
       margin: 15px 0 0;
       padding: 15px 10px;
@@ -32,6 +35,13 @@
       &:hover {
         box-shadow: 0 0 25px rgba(33, 150, 243, 1);
       }
+    }
+
+    .room-name {
+      width: calc(100% - 20px);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .room-delete {

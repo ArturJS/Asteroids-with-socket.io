@@ -53,7 +53,7 @@ export default class Field extends Component {
 
   render() {
     let {name, control, placeholder, hideError, className, autoFocus} = this.props;
-    let {value, error, touched, options, disabled} = this.getCtrl();
+    let {value, error, touched, options, disabled, maxLength} = this.getCtrl();
 
     let controlEl = control({
       name,
@@ -61,6 +61,7 @@ export default class Field extends Component {
       placeholder,
       options,
       disabled,
+      maxLength,
       autoFocus,
       touched,
       error,

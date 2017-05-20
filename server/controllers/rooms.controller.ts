@@ -36,6 +36,14 @@ function getRoomById(req, res) {
 
 function createRoom(req, res) {
   let {roomName} = req.body;
+
+  if (_.isString(roomName) && roomName.length > 50) {
+    res.status(400).json({
+      errors: ['Room name shouldn\'t exceed 50 symbols!']
+    });
+    return;
+  }
+
   let {userId} = req.authData;
   let createdRoom = roomsStorage.createRoom(roomName, userId);
 

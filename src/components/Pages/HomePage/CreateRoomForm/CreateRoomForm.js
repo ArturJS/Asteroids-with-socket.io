@@ -15,6 +15,7 @@ export default class CreateRoomForm extends Component {
     this.formStore = new FormStore({
       roomName: {
         value: '',
+        maxLength: 50,
         validators: [
           Validators.required('Room name is required')
         ],

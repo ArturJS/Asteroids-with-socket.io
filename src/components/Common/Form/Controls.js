@@ -9,7 +9,8 @@ export const inputTextCtrl = ({
   onChange,
   disabled,
   autoFocus,
-  autoComplete = 'off'
+  autoComplete = 'off',
+  maxLength
 }) => {
   return (
     <input
@@ -21,6 +22,7 @@ export const inputTextCtrl = ({
       disabled={disabled}
       autoFocus={autoFocus}
       autoComplete={autoComplete}
+      maxLength={maxLength}
       className="form-control"
       onChange={onChange}
       onFocus={onFocus}
