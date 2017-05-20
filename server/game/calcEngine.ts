@@ -1,4 +1,6 @@
 import * as _ from 'lodash';
+import * as shortid from 'shortid';
+import {Asteroid} from './entities';
 import {rotatePoint} from './helpers';
 import {Bullet} from './entities';
 
@@ -46,7 +48,7 @@ function calcNextScene({
     _updateBulletsData(playerData.bullets, keys, position, rotation, id);
   });
 
-  // collisions check inside each room
+  // collisions check (and adding asteroids) inside each room
   _.each(Array.from(roomBattleMap.values()), (room: IRoomBattle): void => {
     let {
       bulletsInsideRoom,
@@ -57,6 +59,16 @@ function calcNextScene({
       shipsInsideRoom: IShip[],
       asteroidsInsideRoom: IAsteroid[]
     } = _getObjectsInsideRoom({room, playerDataList, asteroidDataList});
+
+    if (asteroidsInsideRoom.length === 0) {
+      // create asteroids if there is no asteroids in room
+      _addAsteroids(
+        _generateAsteroids(_.random(4, 6)),
+        room.id,
+        asteroidsMap,
+        roomBattleMap
+      );
+    }
 
     // check collisions between Bullets and Asteroids
     _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
@@ -92,8 +104,6 @@ function calcNextScene({
         }
       });
     });
-
-
   });
 
   // update positions for asteroids and remove that isDeleted
@@ -107,6 +117,21 @@ function calcNextScene({
 }
 
 /// private methods
+
+function _generateAsteroids(howMany): IAsteroid[] {
+  let asteroids: IAsteroid[] = [];
+
+  _.times(howMany, () => {
+    asteroids.push(
+      new Asteroid({
+        id: shortid.generate(),
+        radius: _.random(30, 60)
+      })
+    );
+  });
+
+  return asteroids;
+}
 
 function _addScoreByPlayerId(playersMap: Map<string, IPlayer>, playerId: string): void {
   if (playersMap.has(playerId)) {
@@ -306,7 +331,11 @@ function _translatePolygon(vertices: IPoint[], {dx = 0, dy = 0}:{dx?: number, dy
   });
 }
 
-function _updateBulletsData(bullets: IBullet[], keys: IKeys, position: IPoint, rotation: number, playerId: string): void {
+function _updateBulletsData(bullets: IBullet[],
+                            keys: IKeys,
+                            position: IPoint,
+                            rotation: number,
+                            playerId: string): void {
   _.each(bullets, (bullet: IBullet): void => _updateBullet(bullet));
 
   if (keys.space &&

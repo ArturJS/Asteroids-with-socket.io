@@ -1,5 +1,4 @@
-import {Asteroid, Ship} from './entities';
-import * as shortid from 'shortid';
+import {Ship} from './entities';
 import * as _ from 'lodash';
 
 export default {
@@ -61,16 +60,10 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
   });
 
   if (!_roomBattleMap.has(roomId)) {
-    let asteroids: IAsteroid[] = _generateAsteroids(_.random(3, 5));
-
-    _.each(asteroids, (asteroid: IAsteroid) => {
-      _asteroidsMap.set(asteroid.id, asteroid);
-    });
-
     _roomBattleMap.set(roomId, {
       id: roomId,
       playerIds: [],
-      asteroidIds: asteroids.map((asteroid: IAsteroid) => asteroid.id),
+      asteroidIds: [],
       explosions: []
     });
   }
@@ -93,21 +86,4 @@ function removeShip(playerId: string, roomId: string): void {
 
     _roomBattleMap.delete(roomId);
   }
-}
-
-/// private methods
-
-function _generateAsteroids(howMany): IAsteroid[] {
-  let asteroids: IAsteroid[] = [];
-
-  _.times(howMany, () => {
-    asteroids.push(
-      new Asteroid({
-        id: shortid.generate(),
-        radius: _.random(30, 60)
-      })
-    );
-  });
-
-  return asteroids;
 }
