@@ -221,9 +221,9 @@ function _addExplosionsInRoom(asteroid: IAsteroid, roomId: string, roomBattleMap
 
 function _removeAllExplosions(roomBattleMap: Map<string, IRoomBattle>) {
   let roomBattle: IRoomBattle = null;
-
-  for (roomBattle of roomBattleMap.values()) {
-    roomBattle.explosions.splice(0, roomBattle.explosions.length);
+  const roomsList = Array.from(roomBattleMap.values());
+  for (roomBattle of roomsList) {
+    roomBattle.explosions = [];
   }
 }
 

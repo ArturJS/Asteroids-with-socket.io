@@ -4,7 +4,10 @@
     "module": "commonjs",
     "noImplicitAny": false,
     "moduleResolution": "node",
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": [
+      "node_modules/@types",
+      "server/game/interfaces"
+    ],
     "sourceMap": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true

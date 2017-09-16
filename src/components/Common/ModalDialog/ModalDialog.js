@@ -14,6 +14,12 @@ const noBackdropStyle = {
   }
 };
 
+const transparentBackdropStyle = {
+  overlay: {
+    backgroundColor: 'transparent'
+  }
+};
+
 @inject('modalStore')
 @observer
 export default class ModalDialog extends Component {
@@ -37,7 +43,7 @@ export default class ModalDialog extends Component {
         isOpen={isOpen}
         onRequestClose={this.dismiss}
         closeTimeoutMS={250}
-        style={noBackdrop ? noBackdropStyle : {}}
+        style={noBackdrop ? noBackdropStyle : transparentBackdropStyle}
         className={`modal ${modalClassName}`}
         contentLabel={''}>
         <div className="modal-dialog">
