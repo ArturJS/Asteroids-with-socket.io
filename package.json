@@ -92,10 +92,10 @@
   "scripts": {
     "start": "npm run node_api:prod",
     "ui-server": "node scripts/start.js",
-    "node_api:dev": "nodemon --exec ts-node -- ./server.ts --delay 500ms --ignore src/",
+    "node_api:dev": "nodemon --exec ts-node -- server/server.ts --delay 500ms --ignore src/",
     "node_api:prod": "node build-server/server.js",
     "build": "node scripts/build.js",
-    "build-server": "rimraf build-server && tsc --outDir build-server server.ts",
+    "build-server": "rimraf build-server && tsc --outDir build-server server/server.ts",
     "test": "node scripts/test.js --env=jsdom"
   },
   "jest": {

@@ -134,7 +134,6 @@ function _addExplosionsInRoom(asteroid, roomId, roomBattleMap) {
 function _removeAllExplosions(roomBattleMap) {
     var roomBattle = null;
     var roomsList = Array.from(roomBattleMap.values());
-    console.log(roomsList);
     for (var _i = 0, roomsList_1 = roomsList; _i < roomsList_1.length; _i++) {
         roomBattle = roomsList_1[_i];
         roomBattle.explosions = [];
