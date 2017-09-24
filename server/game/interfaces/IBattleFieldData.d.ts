@@ -1,5 +1,5 @@
 interface IBattleFieldData {
-  playerDataMap:{[index: string]: IPlayer};
+  players:IPlayer[];
   asteroids:{vertices:IPoint[]}[];
   explosions: IExplosion[];
 }

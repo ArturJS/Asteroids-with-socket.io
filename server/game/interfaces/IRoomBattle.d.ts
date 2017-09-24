@@ -1,6 +1,6 @@
 interface IRoomBattle {
   id: string;
-  playerIds: string[];
-  asteroidIds: string[];
+  players: Map<string, IPlayer>;
+  asteroids: IAsteroid[];
   explosions: IExplosion[]
 }

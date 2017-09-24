@@ -4,7 +4,6 @@ var events = require("events");
 var _ = require("lodash");
 var calcEngine_1 = require("./calcEngine");
 var storage_1 = require("./storage");
-// TODO: use IOC container http://inversify.io/
 exports["default"] = {
     runGameCircle: runGameCircle,
     updateKeys: updateKeys,
@@ -18,15 +17,15 @@ function runGameCircle() {
     setInterval(function () {
         _.flow(storage_1["default"].getStorageData, calcEngine_1["default"].calcNextScene, storage_1["default"].setStorageData)();
         var gameStorageData = storage_1["default"].getStorageData();
-        var roomIds = Array.from(gameStorageData.roomBattleMap.keys());
+        var roomIds = Array.from(gameStorageData.keys());
         _.each(roomIds, function (roomId) {
             eventEmitter.emit('updateBattleField', _mapBattleFieldData(gameStorageData, roomId), roomId);
         });
     }, 1000 / 60);
     return eventEmitter;
 }
-function updateKeys(playerId, keys) {
-    storage_1["default"].updateKeys(playerId, keys);
+function updateKeys(roomId, playerId, keys) {
+    storage_1["default"].updateKeys(roomId, playerId, keys);
 }
 function addShip(_a, roomId) {
     var playerId = _a.playerId, login = _a.login;
@@ -39,19 +38,11 @@ function getBattleFieldSnapshot(roomId) {
     return _mapBattleFieldData(storage_1["default"].getStorageData(), roomId);
 }
 /// private methods
-function _mapBattleFieldData(_a, roomId) {
-    var playersMap = _a.playersMap, roomBattleMap = _a.roomBattleMap, asteroidsMap = _a.asteroidsMap;
-    var _b = roomBattleMap.get(roomId), playerIds = _b.playerIds, asteroidIds = _b.asteroidIds, explosions = _b.explosions;
-    var playerDataMap = {};
-    _.each(playerIds, function (pId) {
-        playerDataMap[pId] = playersMap.get(pId);
-    });
-    var asteroids = [];
-    _.each(asteroidIds, function (pId) {
-        asteroids.push(asteroidsMap.get(pId));
-    });
+function _mapBattleFieldData(roomBattleMap, roomId) {
+    var _a = roomBattleMap.get(roomId), players = _a.players, asteroids = _a.asteroids, explosions = _a.explosions;
+    var playersList = Array.from(players.values());
     return {
-        playerDataMap: _.mapValues(playerDataMap, function (_a) {
+        players: playersList.map(function (_a) {
             var id = _a.id, login = _a.login, ship = _a.ship, bullets = _a.bullets, score = _a.score, keys = _a.keys;
             return {
                 id: id,

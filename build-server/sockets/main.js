@@ -22,7 +22,7 @@ function init(io) {
         main_1["default"].addShip({ playerId: userId, login: login }, roomId);
         socketList.push(socket);
         socket.emit('updateBattleField', main_1["default"].getBattleFieldSnapshot(roomId));
-        socket.on('keyUpdate', _updateKeys(userId));
+        socket.on('keyUpdate', _updateKeys(roomId, userId));
         socket.on('disconnect', function () {
             _.remove(socketList, function (item) { return item === socket; });
             main_1["default"].removeShip(userId, roomId);
@@ -38,8 +38,8 @@ function _initGame(io) {
             .emit('updateBattleField', battleFieldData);
     });
 }
-function _updateKeys(userId) {
+function _updateKeys(roomId, userId) {
     return function (keys) {
-        main_1["default"].updateKeys(userId, keys);
+        main_1["default"].updateKeys(roomId, userId, keys);
     };
 }

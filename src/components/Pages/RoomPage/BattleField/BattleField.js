@@ -55,10 +55,10 @@ export default class BattleField extends Component {
     const context = this.canvas.getContext('2d');
     this.setState({context});
 
-    this.props.socket.on('updateBattleField', ({playerDataMap, asteroids, explosions}) => {
-      let playerNames = _.map(playerDataMap, ({login, score}, userId) => {
+    this.props.socket.on('updateBattleField', ({players, asteroids, explosions}) => {
+      let playerNames = players.map(({login, score, id}) => {
         return {
-          id: userId,
+          id,
           value: login,
           score
         };
@@ -76,12 +76,12 @@ export default class BattleField extends Component {
           radius: explosion.radius
         })),
         playerNames,
-        playerDataMap: _.mapValues(playerDataMap, ({login, ship, bullets, keys}, userId) => {
+        players: players.map(({login, ship, bullets, keys, id}) => {
           return {
             login,
             number: _.findIndex(playerNames, p => p.value === login) + 1,
             ship: {
-              userId,
+              userId: id,
               position: {
                 x: ship.position.x,
                 y: ship.position.y
@@ -150,16 +150,16 @@ export default class BattleField extends Component {
     });
   }
 
-  updateParticles({playerDataMap}) {
-    this.createParticles(playerDataMap);
+  updateParticles({players}) {
+    this.createParticles(players);
 
     _.each(this.particles, particle => particle.render(this.state));
 
     _.remove(this.particles, particle => particle.delete);
   }
 
-  createParticles(playerDataMap) {
-    _.each(playerDataMap, ({ship, keys}) => {
+  createParticles(players) {
+    players.forEach(({ship, keys}) => {
       if (keys.up) {
         let posDelta = rotatePoint({x: 0, y: -10}, {x: 0, y: 0}, (ship.rotation - 180) * Math.PI / 180);
 
@@ -200,10 +200,10 @@ export default class BattleField extends Component {
     });
   }
 
-  renderObjects({playerDataMap, asteroids}) {
+  renderObjects({players, asteroids}) {
     const {context} = this.state;
 
-    _.each(playerDataMap, ({number, ship, bullets}) => {
+    players.forEach(({number, ship, bullets}) => {
       renderShip(ship, context, {number});
       _.each(bullets, bullet => renderBullet(bullet, context));
     });

@@ -16,61 +16,68 @@ var SCREEN = {
 var ROTATION_SPEED = 6;
 var SPEED = 0.15;
 var INERTIA = 0.99;
-function calcNextScene(_a) {
-    var playersMap = _a.playersMap, roomBattleMap = _a.roomBattleMap, asteroidsMap = _a.asteroidsMap;
-    _removeAllExplosions(roomBattleMap);
-    var playerDataList = Array.from(playersMap.values());
-    var asteroidDataList = Array.from(asteroidsMap.values());
-    // update positions for ships and bullets
-    _.each(playerDataList, function (playerData) {
-        var ship = playerData.ship, keys = playerData.keys, id = playerData.id;
-        _updateShipData(ship, keys);
-        var position = ship.position, rotation = ship.rotation;
-        _updateBulletsData(playerData.bullets, keys, position, rotation, id);
-    });
-    // collisions check (and adding asteroids) inside each room
-    _.each(Array.from(roomBattleMap.values()), function (room) {
-        var _a = _getObjectsInsideRoom({ room: room, playerDataList: playerDataList, asteroidDataList: asteroidDataList }), bulletsInsideRoom = _a.bulletsInsideRoom, shipsInsideRoom = _a.shipsInsideRoom, asteroidsInsideRoom = _a.asteroidsInsideRoom;
-        if (asteroidsInsideRoom.length === 0) {
-            // create asteroids if there is no asteroids in room
-            _addAsteroids(_generateAsteroids(_.random(4, 6)), room.id, asteroidsMap, roomBattleMap);
-        }
-        // check collisions between Bullets and Asteroids
-        _.each(asteroidsInsideRoom, function (asteroid) {
-            var bullet = null;
-            for (var _i = 0, bulletsInsideRoom_1 = bulletsInsideRoom; _i < bulletsInsideRoom_1.length; _i++) {
-                bullet = bulletsInsideRoom_1[_i];
-                var hasIntersection = _pointInsidePolygon(bullet.position, asteroid.vertices);
-                if (hasIntersection) {
-                    _destroyAsteroid({ asteroid: asteroid, roomBattleMap: roomBattleMap, room: room, asteroidsMap: asteroidsMap });
-                    _addScoreByPlayerId(playersMap, bullet.playerId);
-                    bullet.destroy();
-                    return;
-                }
-            }
-        });
-        // check collisions between Ships and Asteroids
-        _.each(shipsInsideRoom, function (ship) {
-            var nearestToShipAsteroids = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
-            var vertices = ship.vertices;
-            _.each(nearestToShipAsteroids, function (asteroid) {
-                var hasIntersection = _polygonsHaveIntersections(vertices, asteroid.vertices);
-                if (hasIntersection) {
-                    _destroyAsteroid({ asteroid: asteroid, roomBattleMap: roomBattleMap, room: room, asteroidsMap: asteroidsMap });
-                    _addScoreByPlayerId(playersMap, ship.playerId);
-                }
-            });
-        });
-    });
-    // update positions for asteroids and remove that isDeleted
-    _updateAsteroids(asteroidsMap);
-    return {
-        playersMap: playersMap,
-        roomBattleMap: roomBattleMap,
-        asteroidsMap: asteroidsMap
-    };
+function calcNextScene(roomBattleMap) {
+    for (var _i = 0, _a = Array.from(roomBattleMap.values()); _i < _a.length; _i++) {
+        var roomBattle = _a[_i];
+        var players = roomBattle.players, asteroids = roomBattle.asteroids;
+        var playersList = Array.from(players.values());
+        _cleanUpDeadObjects(roomBattle);
+        _checkCollisions(roomBattle);
+        _updateObjectsPositions({ players: playersList, asteroids: asteroids });
+    }
+    return roomBattleMap;
 }
 /// private methods
+function _cleanUpDeadObjects(room) {
+    room.explosions = [];
+    _.remove(room.asteroids, function (asteroid) { return asteroid.isDeleted; });
+    for (var _i = 0, _a = Array.from(room.players.values()); _i < _a.length; _i++) {
+        var player = _a[_i];
+        _.remove(player.bullets, function (bullet) { return bullet.isDeleted; });
+    }
+}
+function _checkCollisions(room) {
+    // collisions check (and adding asteroids) inside each room
+    var playersList = Array.from(room.players.values());
+    var asteroidsInsideRoom = room.asteroids;
+    var shipsInsideRoom = playersList.map(function (player) { return player.ship; });
+    var bulletsInsideRoom = _.flatten(playersList.map(function (player) { return player.bullets; }));
+    if (asteroidsInsideRoom.length === 0) {
+        // create asteroids if there is no asteroids in room
+        _addAsteroids(_generateAsteroids(_.random(4, 6)), room);
+    }
+    // check collisions between Bullets and Asteroids
+    _.each(asteroidsInsideRoom, function (asteroid) {
+        var bullet = null;
+        for (var _i = 0, bulletsInsideRoom_1 = bulletsInsideRoom; _i < bulletsInsideRoom_1.length; _i++) {
+            bullet = bulletsInsideRoom_1[_i];
+            var hasIntersection = _pointInsidePolygon(bullet.position, asteroid.vertices);
+            if (hasIntersection) {
+                _destroyAsteroid(asteroid, room);
+                _addScoreByPlayerId(room.players, bullet.playerId);
+                bullet.destroy();
+                return;
+            }
+        }
+    });
+    // check collisions between Ships and Asteroids
+    _.each(shipsInsideRoom, function (ship) {
+        var nearestToShipAsteroids = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
+        var vertices = ship.vertices;
+        _.each(nearestToShipAsteroids, function (asteroid) {
+            var hasIntersection = _polygonsHaveIntersections(vertices, asteroid.vertices);
+            if (hasIntersection) {
+                _destroyAsteroid(asteroid, room);
+                _addScoreByPlayerId(room.players, ship.playerId);
+            }
+        });
+    });
+}
+function _updateObjectsPositions(_a) {
+    var players = _a.players, asteroids = _a.asteroids;
+    _updateAsteroids(asteroids);
+    _updatePlayersAndBullets(players);
+}
 function _generateAsteroids(howMany) {
     var asteroids = [];
     _.times(howMany, function () {
@@ -100,50 +107,20 @@ function _getNearestToShipAsteroids(ship, asteroidsInsideRoom) {
     });
     return nearestToShipAsteroids;
 }
-function _getObjectsInsideRoom(_a) {
-    var room = _a.room, playerDataList = _a.playerDataList, asteroidDataList = _a.asteroidDataList;
-    var playersInsideRoom = _.filter(playerDataList, function (player) {
-        return _.includes(room.playerIds, player.id);
-    });
-    var bulletsInsideRoom = _.reduce(playersInsideRoom, function (accumulator, player) {
-        return accumulator.concat(player.bullets);
-    }, []);
-    var shipsInsideRoom = playersInsideRoom.map(function (player) { return player.ship; });
-    var asteroidsInsideRoom = _.filter(asteroidDataList, function (asteroid) {
-        return _.includes(room.asteroidIds, asteroid.id);
-    });
-    return {
-        bulletsInsideRoom: bulletsInsideRoom,
-        shipsInsideRoom: shipsInsideRoom,
-        asteroidsInsideRoom: asteroidsInsideRoom
-    };
-}
-function _destroyAsteroid(_a) {
-    var asteroid = _a.asteroid, roomBattleMap = _a.roomBattleMap, room = _a.room, asteroidsMap = _a.asteroidsMap;
+function _destroyAsteroid(asteroid, room) {
     var asteroidParticles = asteroid.destroy();
-    _.remove(roomBattleMap.get(room.id).asteroidIds, function (aId) { return aId === asteroid.id; });
-    _addExplosionsInRoom(asteroid, room.id, roomBattleMap);
-    _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+    _addExplosionsInRoom(asteroid, room);
+    _addAsteroids(asteroidParticles, room);
 }
-function _addExplosionsInRoom(asteroid, roomId, roomBattleMap) {
-    roomBattleMap.get(roomId).explosions.push({
+function _addExplosionsInRoom(asteroid, room) {
+    room.explosions.push({
         position: asteroid.center,
         radius: asteroid.radius
     });
 }
-function _removeAllExplosions(roomBattleMap) {
-    var roomBattle = null;
-    var roomsList = Array.from(roomBattleMap.values());
-    for (var _i = 0, roomsList_1 = roomsList; _i < roomsList_1.length; _i++) {
-        roomBattle = roomsList_1[_i];
-        roomBattle.explosions = [];
-    }
-}
-function _addAsteroids(asteroids, roomId, asteroidsMap, roomBattleMap) {
-    _.each(asteroids, function (asteroid) {
-        asteroidsMap.set(asteroid.id, asteroid);
-        roomBattleMap.get(roomId).asteroidIds.push(asteroid.id);
-    });
+function _addAsteroids(asteroids, room) {
+    (_a = room.asteroids).push.apply(_a, asteroids);
+    var _a;
 }
 function _updateShipData(ship, keys) {
     if (keys.up) {
@@ -184,12 +161,18 @@ function _accelerate(velocity, rotation, speed) {
         y: velocity.y - Math.cos(-rotation * Math.PI / 180) * speed
     };
 }
-function _updateAsteroids(asteroidMap) {
-    var asteroidList = Array.from(asteroidMap.values());
-    _.each(asteroidList, function (asteroid) {
+function _updatePlayersAndBullets(players) {
+    players.forEach(function (playerData) {
+        var ship = playerData.ship, keys = playerData.keys, id = playerData.id;
+        _updateShipData(ship, keys);
+        var position = ship.position, rotation = ship.rotation;
+        _updateBulletsData(playerData.bullets, keys, position, rotation, id);
+    });
+}
+function _updateAsteroids(asteroidList) {
+    asteroidList.forEach(function (asteroid) {
         var rotationSpeed = asteroid.rotationSpeed, vertices = asteroid.vertices, center = asteroid.center;
         if (asteroid.isDeleted) {
-            asteroidMap["delete"](asteroid.id);
             return;
         }
         asteroid.vertices = vertices
@@ -227,7 +210,6 @@ function _updateBulletsData(bullets, keys, position, rotation, playerId) {
         (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
         bullets.push(new entities_2.Bullet({ playerId: playerId, position: position, rotation: rotation }));
     }
-    _.remove(bullets, function (bullet) { return bullet.isDeleted; });
 }
 function _updateBullet(bullet) {
     var position = bullet.position, velocity = bullet.velocity;

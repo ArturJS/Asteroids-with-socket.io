@@ -36,7 +36,7 @@ function init(io) {
       gameEngine.getBattleFieldSnapshot(roomId)
     );
 
-    socket.on('keyUpdate', _updateKeys(userId));
+    socket.on('keyUpdate', _updateKeys(roomId, userId));
 
     socket.on('disconnect', () => {
       _.remove(socketList, (item) => item === socket);
@@ -58,8 +58,8 @@ function _initGame(io) {
     });
 }
 
-function _updateKeys(userId) {
+function _updateKeys(roomId, userId) {
   return (keys) => {
-    gameEngine.updateKeys(userId, keys);
+    gameEngine.updateKeys(roomId, userId, keys);
   };
 }

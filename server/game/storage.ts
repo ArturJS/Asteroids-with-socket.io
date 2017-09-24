@@ -1,5 +1,4 @@
 import {Ship} from './entities';
-import * as _ from 'lodash';
 
 export default {
   getStorageData,
@@ -11,41 +10,37 @@ export default {
 
 ///
 
-let _playersMap: Map<string, IPlayer> = new Map();
-
-let _roomBattleMap: Map<string, IRoomBattle> = new Map();
-
-let _asteroidsMap: Map<string, IAsteroid> = new Map();
+let _roomBattleMap: IStorageData = new Map<string, IRoomBattle>();
 
 
 function getStorageData(): IStorageData {
-  return {
-    playersMap: _playersMap,
-    roomBattleMap: _roomBattleMap,
-    asteroidsMap: _asteroidsMap
-  };
+  return _roomBattleMap;
 }
 
-function setStorageData({
-  playersMap,
-  roomBattleMap,
-  asteroidsMap
-}:IStorageData): void {
-  _playersMap = playersMap;
+function setStorageData(roomBattleMap: IStorageData): void {
   _roomBattleMap = roomBattleMap;
-  _asteroidsMap = asteroidsMap;
 }
 
 
-function updateKeys(playerId: string, keys: IKeys): void {
-  if (_playersMap.has(playerId)) {
-    _playersMap.get(playerId).keys = keys;
+function updateKeys(roomId:string, playerId: string, keys: IKeys): void {
+  let room = _roomBattleMap.get(roomId);
+  if (room && room.players.has(playerId)) {
+    room.players.get(playerId).keys = keys;
   }
 }
 
 
 function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
-  _playersMap.set(playerId, {
+  if (!_roomBattleMap.has(roomId)) {
+    _roomBattleMap.set(roomId, {
+      id: roomId,
+      players: new Map(),
+      asteroids: [],
+      explosions: []
+    });
+  }
+
+  _roomBattleMap.get(roomId).players.set(playerId, {
     id: playerId,
     login,
     ship: new Ship({playerId}),
@@ -58,32 +53,14 @@ function addShip({playerId, login}:{playerId: string, login: string}, roomId: st
     score: 0,
     bullets: []
   });
-
-  if (!_roomBattleMap.has(roomId)) {
-    _roomBattleMap.set(roomId, {
-      id: roomId,
-      playerIds: [],
-      asteroidIds: [],
-      explosions: []
-    });
-  }
-
-  _roomBattleMap.get(roomId).playerIds.push(playerId);
 }
 
 
 function removeShip(playerId: string, roomId: string): void {
-  _playersMap.delete(playerId);
-
   if (!_roomBattleMap.has(roomId)) return;
+  _roomBattleMap.get(roomId).players.delete(playerId);
 
-  _.remove(_roomBattleMap.get(roomId).playerIds, (pId: string) => pId === playerId);
-
-  if (_roomBattleMap.get(roomId).playerIds.length === 0) {
-    let {asteroidIds} = _roomBattleMap.get(roomId);
-
-    _.each(asteroidIds, (asteroidId: string) => _asteroidsMap.delete(asteroidId));
-
+  if (_roomBattleMap.get(roomId).players.size === 0) {
     _roomBattleMap.delete(roomId);
   }
 }

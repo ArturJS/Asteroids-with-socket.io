@@ -4,8 +4,6 @@ import calcEngine from './calcEngine';
 import gameStorage from './storage';
 import EventEmitter = NodeJS.EventEmitter;
 
-// TODO: use IOC container http://inversify.io/
-
 export default {
   runGameCircle,
   updateKeys,
@@ -28,7 +26,7 @@ function runGameCircle(): EventEmitter {
 
     let gameStorageData: IStorageData = gameStorage.getStorageData();
 
-    let roomIds = Array.from(gameStorageData.roomBattleMap.keys());
+    let roomIds = Array.from(gameStorageData.keys());
 
     _.each(roomIds, (roomId: string) => {
       eventEmitter.emit('updateBattleField', _mapBattleFieldData(gameStorageData, roomId), roomId);
@@ -39,8 +37,8 @@ function runGameCircle(): EventEmitter {
   return eventEmitter;
 }
 
-function updateKeys(playerId: string, keys: IKeys): void {
-  gameStorage.updateKeys(playerId, keys);
+function updateKeys(roomId: string, playerId: string, keys: IKeys): void {
+  gameStorage.updateKeys(roomId, playerId, keys);
 }
 
 function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
@@ -57,32 +55,17 @@ function getBattleFieldSnapshot(roomId: string) {
 
 /// private methods
 
-function _mapBattleFieldData({
-  playersMap,
-  roomBattleMap,
-  asteroidsMap
-}:IStorageData, roomId: string): IBattleFieldData {
-
+function _mapBattleFieldData(roomBattleMap: IStorageData, roomId: string): IBattleFieldData {
   let {
-    playerIds,
-    asteroidIds,
+    players,
+    asteroids,
     explosions
-  }:{playerIds: string[], asteroidIds: string[], explosions: IExplosion[]} = roomBattleMap.get(roomId);
+  }:{players: Map<string, IPlayer>, asteroids: IAsteroid[], explosions: IExplosion[]} = roomBattleMap.get(roomId);
 
-  let playerDataMap: {[index: string]: IPlayer} = {};
-
-  _.each(playerIds, (pId: string): void => {
-    playerDataMap[pId] = playersMap.get(pId)
-  });
-
-  let asteroids: IAsteroid[] = [];
-
-  _.each(asteroidIds, (pId: string): void => {
-    asteroids.push(asteroidsMap.get(pId));
-  });
+  let playersList: IPlayer[] = Array.from(players.values());
 
   return {
-    playerDataMap: _.mapValues(playerDataMap, ({id, login, ship, bullets, score, keys}) => {
+    players: playersList.map(({id, login, ship, bullets, score, keys}) => {
       return {
         id,
         login,

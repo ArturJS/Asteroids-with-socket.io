@@ -19,104 +19,86 @@ const ROTATION_SPEED: number = 6;
 const SPEED: number = 0.15;
 const INERTIA: number = 0.99;
 
-function calcNextScene({
-  playersMap,
-  roomBattleMap,
-  asteroidsMap
-}:IScene): IScene {
-
-  _removeAllExplosions(roomBattleMap);
-
-  let playerDataList: IPlayer[] = Array.from(playersMap.values());
-  let asteroidDataList: IAsteroid[] = Array.from(asteroidsMap.values());
-
-  // update positions for ships and bullets
-  _.each(playerDataList, (playerData: IPlayer) => {
+function calcNextScene(roomBattleMap: IStorageData): IStorageData {
+  for (let roomBattle of Array.from(roomBattleMap.values())) {
     let {
-      ship,
-      keys,
-      id
-    }:{ship: IShip, keys: IKeys, id: string} = playerData;
+      players,
+      asteroids
+    }:{players: Map<string, IPlayer>, asteroids: IAsteroid[]} = roomBattle;
+    let playersList: IPlayer[] = Array.from(players.values());
+    _cleanUpDeadObjects(roomBattle);
+    _checkCollisions(roomBattle);
+    _updateObjectsPositions({players: playersList, asteroids})
+  }
 
-    _updateShipData(ship, keys);
-
-    let {
-      position,
-      rotation
-    }:{position: IPoint, rotation: number} = ship;
-
-    _updateBulletsData(playerData.bullets, keys, position, rotation, id);
-  });
-
-  // collisions check (and adding asteroids) inside each room
-  _.each(Array.from(roomBattleMap.values()), (room: IRoomBattle): void => {
-    let {
-      bulletsInsideRoom,
-      shipsInsideRoom,
-      asteroidsInsideRoom
-    }: {
-      bulletsInsideRoom: IBullet[],
-      shipsInsideRoom: IShip[],
-      asteroidsInsideRoom: IAsteroid[]
-    } = _getObjectsInsideRoom({room, playerDataList, asteroidDataList});
-
-    if (asteroidsInsideRoom.length === 0) {
-      // create asteroids if there is no asteroids in room
-      _addAsteroids(
-        _generateAsteroids(_.random(4, 6)),
-        room.id,
-        asteroidsMap,
-        roomBattleMap
-      );
-    }
-
-    // check collisions between Bullets and Asteroids
-    _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
-      let bullet: IBullet = null;
-
-      for (bullet of bulletsInsideRoom) {
-        let hasIntersection: boolean = _pointInsidePolygon(bullet.position, asteroid.vertices);
-
-        if (hasIntersection) {
-          _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
-
-          _addScoreByPlayerId(playersMap, bullet.playerId);
-
-          bullet.destroy();
-
-          return;
-        }
-      }
-    });
-
-    // check collisions between Ships and Asteroids
-    _.each(shipsInsideRoom, (ship: IShip): void => {
-      let nearestToShipAsteroids: IAsteroid[] = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
-      let vertices: IPoint[] = ship.vertices;
-
-      _.each(nearestToShipAsteroids, (asteroid: IAsteroid): void => {
-        let hasIntersection: boolean = _polygonsHaveIntersections(vertices, asteroid.vertices);
-
-        if (hasIntersection) {
-          _destroyAsteroid({asteroid, roomBattleMap, room, asteroidsMap});
-
-          _addScoreByPlayerId(playersMap, ship.playerId);
-        }
-      });
-    });
-  });
-
-  // update positions for asteroids and remove that isDeleted
-  _updateAsteroids(asteroidsMap);
-
-  return {
-    playersMap,
-    roomBattleMap,
-    asteroidsMap
-  };
+  return roomBattleMap;
 }
 
 /// private methods
+
+function _cleanUpDeadObjects(room: IRoomBattle) {
+  room.explosions = [];
+  _.remove(room.asteroids, (asteroid: IAsteroid): boolean => asteroid.isDeleted);
+  for (let player of Array.from(room.players.values())) {
+    _.remove(player.bullets, (bullet: IBullet): boolean => bullet.isDeleted);
+  }
+}
+
+function _checkCollisions(room: IRoomBattle) {
+  // collisions check (and adding asteroids) inside each room
+  let playersList = Array.from(room.players.values());
+  let asteroidsInsideRoom: IAsteroid[] = room.asteroids;
+  let shipsInsideRoom: IShip[] = playersList.map(player => player.ship);
+  let bulletsInsideRoom: IBullet[] = _.flatten(playersList.map(player => player.bullets));
+
+  if (asteroidsInsideRoom.length === 0) {
+    // create asteroids if there is no asteroids in room
+    _addAsteroids(
+      _generateAsteroids(_.random(4, 6)),
+      room
+    );
+  }
+
+  // check collisions between Bullets and Asteroids
+  _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
+    let bullet: IBullet = null;
+
+    for (bullet of bulletsInsideRoom) {
+      let hasIntersection: boolean = _pointInsidePolygon(bullet.position, asteroid.vertices);
+
+      if (hasIntersection) {
+        _destroyAsteroid(asteroid, room);
+        _addScoreByPlayerId(room.players, bullet.playerId);
+        bullet.destroy();
+
+        return;
+      }
+    }
+  });
+
+  // check collisions between Ships and Asteroids
+  _.each(shipsInsideRoom, (ship: IShip): void => {
+    let nearestToShipAsteroids: IAsteroid[] = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
+    let vertices: IPoint[] = ship.vertices;
+
+    _.each(nearestToShipAsteroids, (asteroid: IAsteroid): void => {
+      let hasIntersection: boolean = _polygonsHaveIntersections(vertices, asteroid.vertices);
+
+      if (hasIntersection) {
+        _destroyAsteroid(asteroid, room);
+        _addScoreByPlayerId(room.players, ship.playerId);
+      }
+    });
+  });
+}
+
+function _updateObjectsPositions({
+  players,
+  asteroids
+}: {players: IPlayer[], asteroids: IAsteroid[]}) {
+  _updateAsteroids(asteroids);
+  _updatePlayersAndBullets(players);
+}
 
 function _generateAsteroids(howMany): IAsteroid[] {
   let asteroids: IAsteroid[] = [];
@@ -158,83 +140,22 @@ function _getNearestToShipAsteroids(ship: IShip, asteroidsInsideRoom: IAsteroid[
   return nearestToShipAsteroids;
 }
 
-function _getObjectsInsideRoom({
-  room,
-  playerDataList,
-  asteroidDataList
-}:{
-  room: IRoomBattle,
-  playerDataList: IPlayer[],
-  asteroidDataList: IAsteroid[]
-}): {
-  bulletsInsideRoom: IBullet[],
-  shipsInsideRoom: IShip[],
-  asteroidsInsideRoom: IAsteroid[]
-} {
-  let playersInsideRoom: IPlayer[] = _.filter(playerDataList, (player: IPlayer): boolean => {
-    return _.includes(room.playerIds, player.id);
-  });
-
-  let bulletsInsideRoom: IBullet[] = _.reduce(playersInsideRoom, (accumulator: IBullet[], player: IPlayer): IBullet[] => {
-    return [...accumulator, ...player.bullets];
-  }, []);
-
-  let shipsInsideRoom: IShip[] = playersInsideRoom.map((player: IPlayer): IShip => player.ship);
-
-  let asteroidsInsideRoom: IAsteroid[] = _.filter(asteroidDataList, (asteroid: IAsteroid): boolean => {
-    return _.includes(room.asteroidIds, asteroid.id);
-  });
-
-  return {
-    bulletsInsideRoom,
-    shipsInsideRoom,
-    asteroidsInsideRoom
-  };
-}
-
-function _destroyAsteroid({
-  asteroid,
-  roomBattleMap,
-  room,
-  asteroidsMap
-}:{
-  asteroid: IAsteroid,
-  roomBattleMap: Map<string, IRoomBattle>,
-  room: IRoomBattle,
-  asteroidsMap: Map<string, IAsteroid>
-}): void {
+function _destroyAsteroid(asteroid: IAsteroid, room: IRoomBattle): void {
   let asteroidParticles: IAsteroid[] = asteroid.destroy();
 
-  _.remove(roomBattleMap.get(room.id).asteroidIds, (aId: string): boolean => aId === asteroid.id);
-
-  _addExplosionsInRoom(asteroid, room.id, roomBattleMap);
-
-  _addAsteroids(asteroidParticles, room.id, asteroidsMap, roomBattleMap);
+  _addExplosionsInRoom(asteroid, room);
+  _addAsteroids(asteroidParticles, room);
 }
 
-function _addExplosionsInRoom(asteroid: IAsteroid, roomId: string, roomBattleMap: Map<string, IRoomBattle>): void {
-  roomBattleMap.get(roomId).explosions.push({
+function _addExplosionsInRoom(asteroid: IAsteroid, room: IRoomBattle): void {
+  room.explosions.push({
     position: asteroid.center,
     radius: asteroid.radius
   });
 }
 
-function _removeAllExplosions(roomBattleMap: Map<string, IRoomBattle>) {
-  let roomBattle: IRoomBattle = null;
-  const roomsList = Array.from(roomBattleMap.values());
-  for (roomBattle of roomsList) {
-    roomBattle.explosions = [];
-  }
-}
-
-function _addAsteroids(asteroids: IAsteroid[],
-                       roomId: string,
-                       asteroidsMap: Map<string, IAsteroid>,
-                       roomBattleMap: Map<string, IRoomBattle>): void {
-  _.each(asteroids, (asteroid: IAsteroid): void => {
-    asteroidsMap.set(asteroid.id, asteroid);
-    roomBattleMap.get(roomId).asteroidIds.push(asteroid.id);
-  });
+function _addAsteroids(asteroids: IAsteroid[], room: IRoomBattle): void {
+  room.asteroids.push(...asteroids);
 }
 
 function _updateShipData(ship: IShip, keys: IKeys): void {
@@ -282,11 +203,27 @@ function _accelerate(velocity: IPoint, rotation: number, speed: number): IPoint 
   };
 }
 
+function _updatePlayersAndBullets(players: IPlayer[]) {
+  players.forEach((playerData: IPlayer) => {
+    let {
+      ship,
+      keys,
+      id
+    }:{ship: IShip, keys: IKeys, id: string} = playerData;
 
-function _updateAsteroids(asteroidMap: Map<string, IAsteroid>): void {
-  let asteroidList: IAsteroid[] = Array.from(asteroidMap.values());
+    _updateShipData(ship, keys);
 
-  _.each(asteroidList, (asteroid: IAsteroid): void => {
+    let {
+      position,
+      rotation
+    }:{position: IPoint, rotation: number} = ship;
+
+    _updateBulletsData(playerData.bullets, keys, position, rotation, id);
+  });
+}
+
+function _updateAsteroids(asteroidList: IAsteroid[]): void {
+  asteroidList.forEach((asteroid: IAsteroid): void => {
     let {
       rotationSpeed,
       vertices,
@@ -294,7 +231,6 @@ function _updateAsteroids(asteroidMap: Map<string, IAsteroid>): void {
     }:{rotationSpeed: number, vertices: IPoint[], center: IPoint} = asteroid;
 
     if (asteroid.isDeleted) {
-      asteroidMap.delete(asteroid.id);
       return;
     }
 
@@ -342,8 +278,6 @@ function _updateBulletsData(bullets: IBullet[],
     (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
     bullets.push(new Bullet({playerId, position, rotation}));
   }
-
-  _.remove(bullets, (bullet: IBullet): boolean => bullet.isDeleted);
 }
 
 function _updateBullet(bullet: IBullet): void {
