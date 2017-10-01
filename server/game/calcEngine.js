@@ -1,12 +1,12 @@
-//      
-                                                       
-                                               
-                                                   
-                                                   
-                                               
-                                                 
-                                                           
-                                                             
+// @flow
+import type {IAsteroid} from '../interfaces/IAsteroid';
+import type {IShip} from '../interfaces/IShip';
+import type {IPlayer} from '../interfaces/IPlayer';
+import type {IBullet} from '../interfaces/IBullet';
+import type {IKeys} from '../interfaces/IKeys';
+import type {IPoint} from '../interfaces/IPoint';
+import type {IRoomBattle} from '../interfaces/IRoomBattle';
+import type {IStorageData} from '../interfaces/IStorageData';
 
 const _ = require('lodash');
 const shortid = require('shortid');
@@ -21,22 +21,22 @@ module.exports = {
 
 ///
 
-const SCREEN                                  = {
+const SCREEN: {width: number, height: number} = {
   width: 900,
   height: 600
 };
 
-const ROTATION_SPEED         = 6;
-const SPEED         = 0.15;
-const INERTIA         = 0.99;
+const ROTATION_SPEED: number = 6;
+const SPEED: number = 0.15;
+const INERTIA: number = 0.99;
 
-function calcNextScene(roomBattleMap              )               {
+function calcNextScene(roomBattleMap: IStorageData): IStorageData {
   for (let roomBattle of roomBattleMap.values()) {
     let {
       players,
       asteroids
-    }                                                         = roomBattle;
-    let playersList            = Array.from(players.values());
+    }:{players: Map<string, IPlayer>, asteroids: IAsteroid[]} = roomBattle;
+    let playersList: IPlayer[] = Array.from(players.values());
     _cleanUpDeadObjects(roomBattle);
     _checkCollisions(roomBattle);
     _updateObjectsPositions({players: playersList, asteroids})
@@ -47,20 +47,20 @@ function calcNextScene(roomBattleMap              )               {
 
 /// private methods
 
-function _cleanUpDeadObjects(room             ) {
+function _cleanUpDeadObjects(room: IRoomBattle) {
   room.explosions = [];
-  _.remove(room.asteroids, (asteroid           )          => asteroid.isDeleted);
+  _.remove(room.asteroids, (asteroid: IAsteroid): boolean => asteroid.isDeleted);
   for (let player of room.players.values()) {
-    _.remove(player.bullets, (bullet         )          => bullet.isDeleted);
+    _.remove(player.bullets, (bullet: IBullet): boolean => bullet.isDeleted);
   }
 }
 
-function _checkCollisions(room             ) {
+function _checkCollisions(room: IRoomBattle) {
   // collisions check (and adding asteroids) inside each room
   let playersList = Array.from(room.players.values());
-  let asteroidsInsideRoom              = room.asteroids;
-  let shipsInsideRoom          = playersList.map(player => player.ship);
-  let bulletsInsideRoom            = _.flatten(playersList.map(player => player.bullets));
+  let asteroidsInsideRoom: IAsteroid[] = room.asteroids;
+  let shipsInsideRoom: IShip[] = playersList.map(player => player.ship);
+  let bulletsInsideRoom: IBullet[] = _.flatten(playersList.map(player => player.bullets));
 
   if (asteroidsInsideRoom.length === 0) {
     // create asteroids if there is no asteroids in room
@@ -71,11 +71,11 @@ function _checkCollisions(room             ) {
   }
 
   // check collisions between Bullets and Asteroids
-  _.each(asteroidsInsideRoom, (asteroid           )       => {
-    let bullet         ;
+  _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
+    let bullet: IBullet;
 
     for (bullet of bulletsInsideRoom) {
-      let hasIntersection          = _pointInsidePolygon(bullet.position, asteroid.vertices);
+      let hasIntersection: boolean = _pointInsidePolygon(bullet.position, asteroid.vertices);
 
       if (hasIntersection) {
         _destroyAsteroid(asteroid, room);
@@ -88,12 +88,12 @@ function _checkCollisions(room             ) {
   });
 
   // check collisions between Ships and Asteroids
-  _.each(shipsInsideRoom, (ship      )       => {
-    let nearestToShipAsteroids              = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
-    let vertices           = ship.getVertices() || [];
+  _.each(shipsInsideRoom, (ship: Ship): void => {
+    let nearestToShipAsteroids: IAsteroid[] = _getNearestToShipAsteroids(ship, asteroidsInsideRoom);
+    let vertices: IPoint[] = ship.getVertices() || [];
 
-    _.each(nearestToShipAsteroids, (asteroid           )       => {
-      let hasIntersection          = _polygonsHaveIntersections(vertices, asteroid.vertices);
+    _.each(nearestToShipAsteroids, (asteroid: IAsteroid): void => {
+      let hasIntersection: boolean = _polygonsHaveIntersections(vertices, asteroid.vertices);
 
       if (hasIntersection) {
         _destroyAsteroid(asteroid, room);
@@ -106,13 +106,13 @@ function _checkCollisions(room             ) {
 function _updateObjectsPositions({
   players,
   asteroids
-}                                              ) {
+}: {players: IPlayer[], asteroids: IAsteroid[]}) {
   _updateAsteroids(asteroids);
   _updatePlayersAndBullets(players);
 }
 
-function _generateAsteroids(howMany)              {
-  let asteroids              = [];
+function _generateAsteroids(howMany): IAsteroid[] {
+  let asteroids: IAsteroid[] = [];
 
   _.times(howMany, () => {
     asteroids.push(
@@ -126,21 +126,21 @@ function _generateAsteroids(howMany)              {
   return asteroids;
 }
 
-function _addScoreByPlayerId(playersMap                      , playerId        )       {
+function _addScoreByPlayerId(playersMap: Map<string, IPlayer>, playerId: string): void {
   const player = playersMap.get(playerId);
   if (player) {
     player.score++;
   }
 }
 
-function _getNearestToShipAsteroids(ship       , asteroidsInsideRoom             )              {
-  let nearestToShipAsteroids              = [];
-  const shipRadius         = 20;
-  const shipPos         = ship.position;
+function _getNearestToShipAsteroids(ship: IShip, asteroidsInsideRoom: IAsteroid[]): IAsteroid[] {
+  let nearestToShipAsteroids: IAsteroid[] = [];
+  const shipRadius: number = 20;
+  const shipPos: IPoint = ship.position;
 
-  _.each(asteroidsInsideRoom, (asteroid           )       => {
-    const asteroidPos         = asteroid.getCenter();
-    const asteroidRadius         = asteroid.radius;
+  _.each(asteroidsInsideRoom, (asteroid: IAsteroid): void => {
+    const asteroidPos: IPoint = asteroid.getCenter();
+    const asteroidRadius: number = asteroid.radius;
     if (
       Math.pow(asteroidPos.x - shipPos.x, 2) +
       Math.pow(asteroidPos.y - shipPos.y, 2) <= Math.pow(shipRadius + asteroidRadius, 2)
@@ -152,25 +152,25 @@ function _getNearestToShipAsteroids(ship       , asteroidsInsideRoom            
   return nearestToShipAsteroids;
 }
 
-function _destroyAsteroid(asteroid           , room             )       {
-  let asteroidParticles              = asteroid.destroy();
+function _destroyAsteroid(asteroid: IAsteroid, room: IRoomBattle): void {
+  let asteroidParticles: IAsteroid[] = asteroid.destroy();
 
   _addExplosionsInRoom(asteroid, room);
   _addAsteroids(asteroidParticles, room);
 }
 
-function _addExplosionsInRoom(asteroid           , room             )       {
+function _addExplosionsInRoom(asteroid: IAsteroid, room: IRoomBattle): void {
   room.explosions.push({
     position: asteroid.getCenter(),
     radius: asteroid.radius
   });
 }
 
-function _addAsteroids(asteroids             , room             )       {
+function _addAsteroids(asteroids: IAsteroid[], room: IRoomBattle): void {
   room.asteroids.push(...asteroids);
 }
 
-function _updateShipData(ship       , keys       )       {
+function _updateShipData(ship: IShip, keys: IKeys): void {
   if (keys.up) {
     ship.velocity = _accelerate(ship.velocity, ship.rotation, SPEED);
   }
@@ -208,46 +208,46 @@ function _updateShipData(ship       , keys       )       {
   }
 }
 
-function _accelerate(velocity        , rotation        , speed        )         {
+function _accelerate(velocity: IPoint, rotation: number, speed: number): IPoint {
   return {
     x: velocity.x - Math.sin(-rotation * Math.PI / 180) * speed,
     y: velocity.y - Math.cos(-rotation * Math.PI / 180) * speed
   };
 }
 
-function _updatePlayersAndBullets(players           ) {
-  players.forEach((playerData         ) => {
+function _updatePlayersAndBullets(players: IPlayer[]) {
+  players.forEach((playerData: IPlayer) => {
     let {
       ship,
       keys,
       id
-    }                                        = playerData;
+    }:{ship: IShip, keys: IKeys, id: string} = playerData;
 
     _updateShipData(ship, keys);
 
     let {
       position,
       rotation
-    }                                      = ship;
+    }:{position: IPoint, rotation: number} = ship;
 
     _updateBulletsData(playerData.bullets, keys, position, rotation, id);
   });
 }
 
-function _updateAsteroids(asteroidList             )       {
-  asteroidList.forEach((asteroid           )       => {
+function _updateAsteroids(asteroidList: IAsteroid[]): void {
+  asteroidList.forEach((asteroid: IAsteroid): void => {
     let {
       rotationSpeed,
       vertices
-    }                                             = asteroid;
-    let center         = asteroid.getCenter();
+    }:{rotationSpeed: number, vertices: IPoint[]} = asteroid;
+    let center: IPoint = asteroid.getCenter();
 
     if (asteroid.isDeleted) {
       return;
     }
 
     asteroid.vertices = vertices
-      .map((v        )         => rotatePoint(v, center, rotationSpeed));
+      .map((v: IPoint): IPoint => rotatePoint(v, center, rotationSpeed));
 
     // Move
     _translatePolygon(asteroid.vertices, {
@@ -272,19 +272,19 @@ function _updateAsteroids(asteroidList             )       {
   });
 }
 
-function _translatePolygon(vertices          , {dx = 0, dy = 0}                            = {})       {
-  _.each(vertices, (v        )       => {
+function _translatePolygon(vertices: IPoint[], {dx = 0, dy = 0}:{dx?: number, dy?: number} = {}): void {
+  _.each(vertices, (v: IPoint): void => {
     v.x += dx;
     v.y += dy;
   });
 }
 
-function _updateBulletsData(bullets           ,
-                            keys       ,
-                            position        ,
-                            rotation        ,
-                            playerId        )       {
-  _.each(bullets, (bullet         )       => _updateBullet(bullet));
+function _updateBulletsData(bullets: IBullet[],
+                            keys: IKeys,
+                            position: IPoint,
+                            rotation: number,
+                            playerId: string): void {
+  _.each(bullets, (bullet: IBullet): void => _updateBullet(bullet));
 
   if (keys.space &&
     (bullets.length === 0 || _.last(bullets).date + 300 < Date.now())) {
@@ -292,7 +292,7 @@ function _updateBulletsData(bullets           ,
   }
 }
 
-function _updateBullet(bullet         )       {
+function _updateBullet(bullet: IBullet): void {
   let {
     position,
     velocity
@@ -313,8 +313,8 @@ function _updateBullet(bullet         )       {
   }
 }
 
-function _polygonsHaveIntersections(polygonA          , polygonB          )          {
-  let point        ;
+function _polygonsHaveIntersections(polygonA: IPoint[], polygonB: IPoint[]): boolean {
+  let point: IPoint;
 
   for (point of polygonA) {
     if (_pointInsidePolygon(point, polygonB)) {
@@ -331,26 +331,26 @@ function _polygonsHaveIntersections(polygonA          , polygonB          )     
   return false;
 }
 
-function _pointInsidePolygon(point        , vs          )          {
+function _pointInsidePolygon(point: IPoint, vs: IPoint[]): boolean {
   // ray-casting algorithm based on
   // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
 
   let {
     x, y
-  }        = point;
+  }:IPoint = point;
 
-  let inside          = false;
+  let inside: boolean = false;
 
-  let i         = 0;
-  let j         = vs.length - 1;
+  let i: number = 0;
+  let j: number = vs.length - 1;
 
-  let xi        ;
-  let yi        ;
+  let xi: number;
+  let yi: number;
 
-  let xj        ;
-  let yj        ;
+  let xj: number;
+  let yj: number;
 
-  let intersect         ;
+  let intersect: boolean;
 
   for (; i < vs.length; j = i++) {
     xi = vs[i].x;

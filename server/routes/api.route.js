@@ -1,4 +1,4 @@
-//      
+// @flow
 const express = require('express');
 const roomsController = require('./../controllers/rooms.controller.js');
 const loginController = require('./../controllers/login.controller.js');

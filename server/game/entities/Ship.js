@@ -1,27 +1,27 @@
-//      
-                                                    
-                                                  
+// @flow
+import type {IPoint} from '../../interfaces/IPoint';
+import type {IShip} from '../../interfaces/IShip';
 
 const _ = require('lodash');
 const {rotatePoint} = require('../helpers');
 
-module.exports = class Ship                  {
-                   
-                   
-                   
-                   
+module.exports = class Ship implements IShip {
+  playerId: string;
+  position: IPoint;
+  rotation: number;
+  velocity: IPoint;
 
   constructor({
     playerId,
     position,
     rotation,
     velocity
-  }  
-                     
-                      
-                      
-                     
-   ) {
+  }:{
+    playerId: string,
+    position?: IPoint,
+    rotation?: number,
+    velocity?: IPoint
+  }) {
     this.playerId = playerId;
     this.position = position || {
         x: 450,
@@ -34,10 +34,10 @@ module.exports = class Ship                  {
       };
   }
 
-  getVertices()           {
-    let pos         = this.position;
-    let rotation         = this.rotation;
-    let vertices           = [
+  getVertices(): IPoint[] {
+    let pos: IPoint = this.position;
+    let rotation: number = this.rotation;
+    let vertices: IPoint[] = [
       {
         x: pos.x,
         y: pos.y - 15
@@ -60,10 +60,10 @@ module.exports = class Ship                  {
       }
     ];
 
-    vertices.forEach((point        )       => {
+    vertices.forEach((point: IPoint): void => {
       let {
         x, y
-      }                         = rotatePoint(point, pos, rotation);
+      }: {x: number, y: number} = rotatePoint(point, pos, rotation);
       point.x = x;
       point.y = y;
     });

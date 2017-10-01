@@ -1,6 +1,6 @@
-//      
-                                               
-                                                             
+// @flow
+import type {IKeys} from '../interfaces/IKeys';
+import type {IStorageData} from '../interfaces/IStorageData';
 
 const Ship = require('./entities/Ship');
 
@@ -14,19 +14,19 @@ module.exports = {
 
 ///
 
-let _roomBattleMap               = new Map();
+let _roomBattleMap: IStorageData = new Map();
 
 
-function getStorageData()               {
+function getStorageData(): IStorageData {
   return _roomBattleMap;
 }
 
-function setStorageData(roomBattleMap              )       {
+function setStorageData(roomBattleMap: IStorageData): void {
   _roomBattleMap = roomBattleMap;
 }
 
 
-function updateKeys(roomId       , playerId        , keys       )       {
+function updateKeys(roomId:string, playerId: string, keys: IKeys): void {
   let room = _roomBattleMap.get(roomId);
   if (!room) return;
 
@@ -37,7 +37,7 @@ function updateKeys(roomId       , playerId        , keys       )       {
 }
 
 
-function addShip({playerId, login}                                  , roomId        )       {
+function addShip({playerId, login}:{playerId: string, login: string}, roomId: string): void {
   if (!_roomBattleMap.has(roomId)) {
     _roomBattleMap.set(roomId, {
       id: roomId,
@@ -67,7 +67,7 @@ function addShip({playerId, login}                                  , roomId    
 }
 
 
-function removeShip(playerId        , roomId        )       {
+function removeShip(playerId: string, roomId: string): void {
   const room = _roomBattleMap.get(roomId);
   if (!room) return;
   room.players.delete(playerId);

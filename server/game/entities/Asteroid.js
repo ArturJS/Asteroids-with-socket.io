@@ -1,18 +1,18 @@
-//      
+// @flow
 
-                                                          
-                                                    
+import type {IAsteroid} from '../../interfaces/IAsteroid';
+import type {IPoint} from '../../interfaces/IPoint';
 
 const _ = require('lodash');
 const shortid = require('shortid');
 
-module.exports = class Asteroid                      {
-             
-                   
-                     
-                        
-                 
-                     
+module.exports = class Asteroid implements IAsteroid {
+  id: string;
+  velocity: IPoint;
+  isDeleted: boolean;
+  rotationSpeed: number;
+  radius: number;
+  vertices: IPoint[];
 
   constructor({
     id,
@@ -20,13 +20,13 @@ module.exports = class Asteroid                      {
     rotationSpeed,
     radius,
     center,
-  }  
-               
-                      
-                           
-                   
-                   
-   ) {
+  }:{
+    id: string,
+    velocity?: IPoint,
+    rotationSpeed?: number,
+    radius: number,
+    center?: IPoint
+  }) {
     this.id = id;
     this.radius = radius;
     this.velocity = velocity || {
@@ -38,16 +38,16 @@ module.exports = class Asteroid                      {
     this.isDeleted = false;
   }
 
-  destroy()              {
+  destroy(): IAsteroid[] {
     this.isDeleted = true;
 
-    let asteroidParticles              = [];
+    let asteroidParticles: IAsteroid[] = [];
 
     // Break into smaller asteroids
     if (this.radius > 10) {
       let center = this.getCenter();
 
-      _.times(3, ()       => {
+      _.times(3, (): void => {
         asteroidParticles.push(
           new Asteroid({
             id: shortid.generate(),
@@ -64,17 +64,17 @@ module.exports = class Asteroid                      {
     return asteroidParticles;
   }
 
-  getCenter()         {
+  getCenter(): IPoint {
     return _compute2DPolygonCentroid(this.vertices);
   }
 };
 
 // private methods
 
-function _asteroidVertices(count        , radius        , center         = {x: 0, y: 0})           {
-  let vertices           = [];
+function _asteroidVertices(count: number, radius: number, center: IPoint = {x: 0, y: 0}): IPoint[] {
+  let vertices: IPoint[] = [];
 
-  _.times(count, (i        ) => {
+  _.times(count, (i: number) => {
     vertices.push({
       x: (-Math.sin((360 / count) * i * Math.PI / 180)
       + Math.round(Math.random() * 2 - 1) * Math.random() / 3)
@@ -89,19 +89,19 @@ function _asteroidVertices(count        , radius        , center         = {x: 0
 }
 
 // taken from http://stackoverflow.com/questions/2792443/finding-the-centroid-of-a-polygon#answer-2792459
-function _compute2DPolygonCentroid(vertices          )         {
-  let centroid         = {x: 0, y: 0};
-  let signedArea         = 0.0;
-  let x0         = 0.0; // Current vertex X
-  let y0         = 0.0; // Current vertex Y
-  let x1         = 0.0; // Next vertex X
-  let y1         = 0.0; // Next vertex Y
-  let a         = 0.0;  // Partial signed area
+function _compute2DPolygonCentroid(vertices: IPoint[]): IPoint {
+  let centroid: IPoint = {x: 0, y: 0};
+  let signedArea: number = 0.0;
+  let x0: number = 0.0; // Current vertex X
+  let y0: number = 0.0; // Current vertex Y
+  let x1: number = 0.0; // Next vertex X
+  let y1: number = 0.0; // Next vertex Y
+  let a: number = 0.0;  // Partial signed area
 
-  let vertexCount         = vertices.length;
+  let vertexCount: number = vertices.length;
 
   // For all vertices except last
-  let i         = 0;
+  let i: number = 0;
   for (; i < vertexCount - 1; ++i) {
     x0 = vertices[i].x;
     y0 = vertices[i].y;
