@@ -2,6 +2,10 @@
   "homepage": "https://asteroids-with-socketio.herokuapp.com/",
   "name": "asteroids_socket.io",
   "version": "0.1.0",
+  "engines": {
+    "npm": "5.4.2",
+    "node": "8.6.0"
+  },
   "devDependencies": {
     "autoprefixer": "6.5.1",
     "babel-core": "6.17.0",
