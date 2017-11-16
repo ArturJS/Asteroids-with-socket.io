@@ -32,6 +32,7 @@ export default class BattleField extends Component {
         ratio: window.devicePixelRatio || 1
       },
       playerNames: [],
+      ship: {x: 0, y: 0},
       context: null
     };
 
@@ -44,6 +45,8 @@ export default class BattleField extends Component {
 
     this.particles = [];
 
+    this.scale = 1;
+
     this.handleKeyUp = this.handleKeys.bind(this, false);
     this.handleKeyDown = this.handleKeys.bind(this, true);
   }
@@ -53,6 +56,7 @@ export default class BattleField extends Component {
     window.addEventListener('keydown', this.handleKeyDown);
 
     const context = this.canvas.getContext('2d');
+    _trackTransforms(context);
     this.setState({context});
 
     this.props.socket.on('updateBattleField', ({players, asteroids, explosions}) => {
@@ -125,38 +129,72 @@ export default class BattleField extends Component {
     this.props.socket.emit('keyUpdate', keys);
   }
 
-  update(battleFieldData) {
-    const context = this.state.context;
+  handleZoom = ({nativeEvent: e}) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.wheelDelta / 80;
+    this.zoomShip(delta);
+  };
 
-    context.save();
-    context.scale(this.state.screen.ratio, this.state.screen.ratio);
+  setScale = (scale) => {
+    // const initialScale = this.scale;
+    // const targetScale = scale / initialScale;
+    this.scale = scale;
+    const ctx = this.state.context;
+    // ctx.scale(targetScale, targetScale);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // it's necessary to properly reset transforms
+    ctx.save();
+    ctx.restore();
+  };
 
-    // Motion trail
-    context.fillStyle = '#000';
-    context.globalAlpha = 0.4;
-    context.fillRect(0, 0, this.state.screen.width, this.state.screen.height);
-    context.globalAlpha = 1;
+  zoomShip = (delta = 0) => {
+    const {scale} = this;
+    const ctx = this.state.context;
 
-    this.updateParticles(battleFieldData);
+    const {clientWidth, clientHeight} = this.canvas;
+    const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
+    const shipPos = this.state.ship;
 
-    _.each(battleFieldData.explosions, explosion => this.createExplosion(explosion));
+    let pt;
 
-    this.renderObjects(battleFieldData);
+    if (delta >= 0) {
+      pt = {
+        x: 2 * shipPos.x - areaCenter.x,
+        y: 2 * shipPos.y - areaCenter.y
+      };
+    }
+    else {
+      pt = shipPos;
+    }
 
-    context.restore();
+    ctx.translate(pt.x, pt.y);
 
-    this.setState({
-      playerNames: battleFieldData.playerNames
-    });
-  }
+    if (delta !== 0 && !(scale > 4 && delta > 0 || scale < 0.5 && delta < 0)) {
+      const scaleFactor = 1.1;
+      const factor = Math.pow(scaleFactor, delta);
+      ctx.scale(factor, factor);
+      this.scale *= factor;
+    }
 
-  updateParticles({players}) {
-    this.createParticles(players);
+    ctx.translate(-pt.x, -pt.y);
+    ctx.save();
+    ctx.restore();
+  };
 
-    _.each(this.particles, particle => particle.render(this.state));
+  centerShip = () => {
+    const ctx = this.state.context;
+    const {clientWidth, clientHeight} = this.canvas;
+    const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
+    const shipPos = this.state.ship;
+    const pt = {
+      x: areaCenter.x - shipPos.x,
+      y: areaCenter.y - shipPos.y
+    };
 
-    _.remove(this.particles, particle => particle.delete);
-  }
+    ctx.translate(pt.x, pt.y);
+    ctx.save();
+    ctx.restore();
+  };
 
   createParticles(players) {
     players.forEach(({ship, keys}) => {
@@ -200,6 +238,41 @@ export default class BattleField extends Component {
     });
   }
 
+  update(battleFieldData) {
+    const context = this.state.context;
+
+    context.save();
+    context.scale(this.state.screen.ratio, this.state.screen.ratio);
+    context.clear();
+
+    this.updateParticles(battleFieldData);
+
+    _.each(battleFieldData.explosions, explosion => this.createExplosion(explosion));
+
+    this.renderObjects(battleFieldData);
+
+    context.restore();
+
+    this.centerShip();
+
+    this.setState({
+      playerNames: battleFieldData.playerNames,
+      ship: battleFieldData.players[0].ship.position
+    });
+  }
+
+  updateParticles({players}) {
+    this.createParticles(players);
+
+    _.each(this.particles, particle => particle.render(this.state));
+
+    _.remove(this.particles, particle => particle.delete);
+  }
+
+  resetScale = () => {
+    this.setScale(1);
+  };
+
   renderObjects({players, asteroids}) {
     const {context} = this.state;
 
@@ -214,10 +287,20 @@ export default class BattleField extends Component {
   render() {
     const {screen, playerNames} = this.state;
     const {width, height, ratio} = screen;
+    const {x, y} = this.state.ship;
 
     return (
       <div className="battle-field">
         <div className="players">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={this.resetScale}>
+            Reset scale
+          </button>
+          <div>
+            x: {x.toFixed(0)} y: {y.toFixed(0)}
+          </div>
           <div className="players-heading">
             Players:
           </div>
@@ -233,9 +316,95 @@ export default class BattleField extends Component {
           ref={node => {
             this.canvas = node;
           }}
+          onWheel={this.handleZoom}
           width={width * ratio}
           height={height * ratio}/>
       </div>
     );
   }
 }
+
+
+// Adds ctx.getTransform() - returns an SVGMatrix
+// Adds ctx.transformedPoint(x,y) - returns an SVGPoint
+function _trackTransforms(ctx) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  let xform = svg.createSVGMatrix();
+  ctx.getTransform = () => xform;
+
+  const savedTransforms = [];
+  const save = ctx.save;
+  ctx.save = () => {
+    savedTransforms.push(xform.translate(0, 0));
+    return save.call(ctx);
+  };
+
+  const restore = ctx.restore;
+  ctx.restore = () => {
+    xform = savedTransforms.pop();
+    return restore.call(ctx);
+  };
+
+  const scale = ctx.scale;
+  ctx.scale = (sx, sy) => {
+    xform = xform.scaleNonUniform(sx, sy);
+    return scale.call(ctx, sx, sy);
+  };
+
+  const rotate = ctx.rotate;
+  ctx.rotate = radians => {
+    xform = xform.rotate(radians * 180 / Math.PI);
+    return rotate.call(ctx, radians);
+  };
+
+  const translate = ctx.translate;
+  ctx.translate = (dx, dy) => {
+    xform = xform.translate(dx, dy);
+    return translate.call(ctx, dx, dy);
+  };
+
+  const transform = ctx.transform;
+  ctx.transform = (a, b, c, d, e, f) => {
+    const m2 = svg.createSVGMatrix();
+    m2.a = a;
+    m2.b = b;
+    m2.c = c;
+    m2.d = d;
+    m2.e = e;
+    m2.f = f;
+    xform = xform.multiply(m2);
+    return transform.call(ctx, a, b, c, d, e, f);
+  };
+
+  const setTransform = ctx.setTransform;
+  ctx.setTransform = (a, b, c, d, e, f) => {
+    xform.a = a;
+    xform.b = b;
+    xform.c = c;
+    xform.d = d;
+    xform.e = e;
+    xform.f = f;
+    return setTransform.call(ctx, a, b, c, d, e, f);
+  };
+
+  const pt = svg.createSVGPoint(); // convert mouse pos on the screen to pos on canvas
+  ctx.transformedPoint = (x, y) => {
+    pt.x = x;
+    pt.y = y;
+    return pt.matrixTransform(xform.inverse());
+  };
+
+  ctx.clear = (preserveTransform = true) => {
+    if (preserveTransform) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    if (preserveTransform) {
+      ctx.restore();
+    }
+  };
+}
+
