@@ -1,17 +1,26 @@
+import _ from 'lodash';
 import axios from 'axios';
+
 import config from './apiConfig';
+import {userStore} from '../Stores';
+import {modalStore} from '../components/Common/ModalDialog';
+
 
 const baseApi = {
-  ajax(request) {
-    let promise = axios({...config, ...request});
+  async ajax(request) {
+    try {
+      const res = await axios({...config, ...request});
+      return res;
+    }
+    catch (error) {
+      if (_.get(error, 'response.status') === 401) {
+        userStore.resetUserData();
+        modalStore.showSignIn();
+      }
 
-    promise
-      .then(res => res)
-      .catch((error) => {
-        console.warn(error);
-      });
-
-    return promise;
+      console.error(error);
+      throw error;
+    }
   }
 };
 

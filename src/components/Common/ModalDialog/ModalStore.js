@@ -1,4 +1,6 @@
+import React from 'react';
 import {observable, action} from 'mobx';
+import LoginModal from '../Modals/LoginModal';
 
 export const MODAL_TYPES = {
   error: 'ERROR_MODE',
@@ -92,6 +94,10 @@ class ModalStore {
     this.modalType = modalType;
     this.noBackdrop = noBackdrop;
     this.modalClassName = className;
+  }
+
+  showSignIn() {
+    return this.showCustom('Sign In', <LoginModal/>);
   }
 }
 

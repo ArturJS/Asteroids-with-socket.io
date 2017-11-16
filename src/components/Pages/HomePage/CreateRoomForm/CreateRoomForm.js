@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {inject} from 'mobx-react';
+import _ from 'lodash';
 import {Form, Field, Controls, FormStore, Validators} from '../../../Common/Form';
 import ErrorSummary from '../../../Common/ErrorSummary';
 import roomApi from '../../../../api/roomApi';
@@ -48,11 +49,7 @@ export default class CreateRoomForm extends Component {
       this.setState({errors: null});
     }
     catch (err) {
-      if (
-        err.response &&
-        err.response.status >= 400 &&
-        err.response.status < 500
-      ) {
+      if (_.get(err.response.status) === 400) {
         this.setState({
           errors: err.response.data.errors
         });

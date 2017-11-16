@@ -2,7 +2,6 @@ import React, {Component, PropTypes} from 'react';
 import {hashHistory} from 'react-router';
 import {inject, observer} from 'mobx-react';
 import loginApi from '../../../api/loginApi';
-import LoginModal from '../Modals/LoginModal';
 import './UserAuthState.scss';
 
 @inject('modalStore', 'userStore')
@@ -14,7 +13,7 @@ export default class UserAuthState extends Component {
   };
 
   login = () => {
-    this.props.modalStore.showCustom('Sign In', <LoginModal/>);
+    this.props.modalStore.showSignIn();
   };
 
   logout = () => {
