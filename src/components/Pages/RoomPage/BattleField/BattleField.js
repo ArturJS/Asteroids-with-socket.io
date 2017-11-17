@@ -1,5 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import _ from 'lodash';
+import {inject} from 'mobx-react';
+
 import {rotatePoint} from './helpers';
 import renderAsteroid from './renderers/AsteroidRenderer';
 import renderBullet from './renderers/BulletRenderer';
@@ -17,9 +19,11 @@ const KEY = {
   SPACE: 32
 };
 
+@inject('userStore')
 export default class BattleField extends Component {
   static propTypes = {
-    socket: PropTypes.object.isRequired
+    socket: PropTypes.object.isRequired,
+    userStore: PropTypes.object.isRequired
   };
 
   constructor(props) {
@@ -32,7 +36,6 @@ export default class BattleField extends Component {
         ratio: window.devicePixelRatio || 1
       },
       playerNames: [],
-      ship: {x: 0, y: 0},
       context: null
     };
 
@@ -46,6 +49,7 @@ export default class BattleField extends Component {
     this.particles = [];
 
     this.scale = 1;
+    this.shipPos = {x: 0, y: 0};
 
     this.handleKeyUp = this.handleKeys.bind(this, false);
     this.handleKeyDown = this.handleKeys.bind(this, true);
@@ -136,28 +140,16 @@ export default class BattleField extends Component {
     this.zoomShip(delta);
   };
 
-  setScale = (scale) => {
-    // const initialScale = this.scale;
-    // const targetScale = scale / initialScale;
-    this.scale = scale;
-    const ctx = this.state.context;
-    // ctx.scale(targetScale, targetScale);
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // it's necessary to properly reset transforms
-    ctx.save();
-    ctx.restore();
-  };
-
-  zoomShip = (delta = 0) => {
-    const {scale} = this;
+  zoomShip = (delta) => {
+    const {scale, shipPos} = this;
     const ctx = this.state.context;
 
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
-    const shipPos = this.state.ship;
 
     let pt;
 
-    if (delta >= 0) {
+    if (delta > 0) {
       pt = {
         x: 2 * shipPos.x - areaCenter.x,
         y: 2 * shipPos.y - areaCenter.y
@@ -185,7 +177,28 @@ export default class BattleField extends Component {
     const ctx = this.state.context;
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
-    const shipPos = this.state.ship;
+    const leftTopPoint = ctx.transformedPoint(0, 0);
+    const boundaryPoint = {
+      x: areaCenter.x - leftTopPoint.x,
+      y: areaCenter.y - leftTopPoint.y
+    };
+    const {width, height} = this.state.screen;
+    const {shipPos} = this;
+
+    if (shipPos.x < boundaryPoint.x) {
+      shipPos.x = boundaryPoint.x;
+    }
+    else if (shipPos.x > width - boundaryPoint.x) {
+      shipPos.x = width - boundaryPoint.x;
+    }
+
+    if (shipPos.y < boundaryPoint.y) {
+      shipPos.y = boundaryPoint.y;
+    }
+    else if (shipPos.y > height - boundaryPoint.y) {
+      shipPos.y = height - boundaryPoint.y;
+    }
+
     const pt = {
       x: areaCenter.x - shipPos.x,
       y: areaCenter.y - shipPos.y
@@ -195,6 +208,13 @@ export default class BattleField extends Component {
     ctx.save();
     ctx.restore();
   };
+
+  clearArea() {
+    const {context, screen} = this.state;
+    context.save();
+    context.scale(screen.ratio, screen.ratio);
+    context.clear();
+  }
 
   createParticles(players) {
     players.forEach(({ship, keys}) => {
@@ -239,11 +259,9 @@ export default class BattleField extends Component {
   }
 
   update(battleFieldData) {
-    const context = this.state.context;
+    const {context} = this.state;
 
-    context.save();
-    context.scale(this.state.screen.ratio, this.state.screen.ratio);
-    context.clear();
+    this.clearArea();
 
     this.updateParticles(battleFieldData);
 
@@ -256,9 +274,11 @@ export default class BattleField extends Component {
     this.centerShip();
 
     this.setState({
-      playerNames: battleFieldData.playerNames,
-      ship: battleFieldData.players[0].ship.position
+      playerNames: battleFieldData.playerNames
     });
+
+    const {login} = this.props.userStore.getUserData();
+    this.shipPos = _.find(battleFieldData.players, player => player.login === login).ship.position;
   }
 
   updateParticles({players}) {
@@ -270,7 +290,11 @@ export default class BattleField extends Component {
   }
 
   resetScale = () => {
-    this.setScale(1);
+    this.scale = 1;
+    const ctx = this.state.context;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // it's necessary to properly reset transforms
+    ctx.save();
+    ctx.restore();
   };
 
   renderObjects({players, asteroids}) {
@@ -287,7 +311,6 @@ export default class BattleField extends Component {
   render() {
     const {screen, playerNames} = this.state;
     const {width, height, ratio} = screen;
-    const {x, y} = this.state.ship;
 
     return (
       <div className="battle-field">
@@ -298,9 +321,6 @@ export default class BattleField extends Component {
             onClick={this.resetScale}>
             Reset scale
           </button>
-          <div>
-            x: {x.toFixed(0)} y: {y.toFixed(0)}
-          </div>
           <div className="players-heading">
             Players:
           </div>
@@ -407,4 +427,3 @@ function _trackTransforms(ctx) {
     }
   };
 }
-
