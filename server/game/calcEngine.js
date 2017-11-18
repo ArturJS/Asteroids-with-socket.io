@@ -22,8 +22,8 @@ module.exports = {
 ///
 
 const SCREEN: {width: number, height: number} = {
-  width: 900,
-  height: 600
+  width: 1800,
+  height: 1200
 };
 
 const ROTATION_SPEED: number = 6;

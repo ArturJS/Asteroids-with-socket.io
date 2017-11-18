@@ -19,6 +19,11 @@ const KEY = {
   SPACE: 32
 };
 
+const SCREEN = {
+  width: 1800,
+  height: 1200
+};
+
 @inject('userStore')
 export default class BattleField extends Component {
   static propTypes = {
@@ -53,15 +58,18 @@ export default class BattleField extends Component {
 
     this.handleKeyUp = this.handleKeys.bind(this, false);
     this.handleKeyDown = this.handleKeys.bind(this, true);
+    this.handleResize = _.debounce(this.updateCanvasSize, 300);
   }
 
   componentDidMount() {
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('resize', this.handleResize);
 
     const context = this.canvas.getContext('2d');
     _trackTransforms(context);
     this.setState({context});
+    this.updateCanvasSize();
 
     this.props.socket.on('updateBattleField', ({players, asteroids, explosions}) => {
       let playerNames = players.map(({login, score, id}) => {
@@ -121,6 +129,7 @@ export default class BattleField extends Component {
   componentWillUnmount() {
     window.removeEventListener('keyup', this.handleKeyUp);
     window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('resize', this.handleResize);
   }
 
   handleKeys(value, e) {
@@ -138,6 +147,19 @@ export default class BattleField extends Component {
     e.stopPropagation();
     const delta = e.wheelDelta / 80;
     this.zoomShip(delta);
+  };
+
+  // count of pixels in canvas from left top corner to (clientWidth / 2, clientHeight / 2) on canvas
+  getBoundaryPoint = () => {
+    const ctx = this.state.context;
+    const {clientWidth, clientHeight} = this.canvas;
+    const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
+    const leftTopPoint = ctx.transformedPoint(0, 0);
+
+    return {
+      x: areaCenter.x - leftTopPoint.x,
+      y: areaCenter.y - leftTopPoint.y
+    };
   };
 
   zoomShip = (delta) => {
@@ -161,7 +183,10 @@ export default class BattleField extends Component {
 
     ctx.translate(pt.x, pt.y);
 
-    if (delta !== 0 && !(scale > 4 && delta > 0 || scale < 0.5 && delta < 0)) {
+    const boundaryPoint = this.getBoundaryPoint();
+    const isOutOfBoundaries = boundaryPoint.x * 2 > SCREEN.width || boundaryPoint.y * 2 > SCREEN.height;
+
+    if (delta !== 0 && !(scale > 4 && delta > 0 || (scale < 0.5 || isOutOfBoundaries) && delta < 0)) {
       const scaleFactor = 1.1;
       const factor = Math.pow(scaleFactor, delta);
       ctx.scale(factor, factor);
@@ -177,12 +202,8 @@ export default class BattleField extends Component {
     const ctx = this.state.context;
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
-    const leftTopPoint = ctx.transformedPoint(0, 0);
-    const boundaryPoint = {
-      x: areaCenter.x - leftTopPoint.x,
-      y: areaCenter.y - leftTopPoint.y
-    };
-    const {width, height} = this.state.screen;
+    const boundaryPoint = this.getBoundaryPoint();
+    const {width, height} = SCREEN;
     const {shipPos} = this;
 
     if (shipPos.x < boundaryPoint.x) {
@@ -281,6 +302,16 @@ export default class BattleField extends Component {
     this.shipPos = _.find(battleFieldData.players, player => player.login === login).ship.position;
   }
 
+  updateCanvasSize = () => {
+    this.setState(({screen}) => ({
+      screen: {
+        ...screen,
+        width: window.innerWidth,
+        height: window.innerHeight - 40
+      }
+    }));
+  };
+
   updateParticles({players}) {
     this.createParticles(players);
 
@@ -295,6 +326,7 @@ export default class BattleField extends Component {
     ctx.setTransform(1, 0, 0, 1, 0, 0); // it's necessary to properly reset transforms
     ctx.save();
     ctx.restore();
+    this.canvas.focus();
   };
 
   renderObjects({players, asteroids}) {
@@ -336,6 +368,7 @@ export default class BattleField extends Component {
           ref={node => {
             this.canvas = node;
           }}
+          tabIndex="0"
           onWheel={this.handleZoom}
           width={width * ratio}
           height={height * ratio}/>

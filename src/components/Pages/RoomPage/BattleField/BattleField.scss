@@ -5,11 +5,6 @@
   canvas {
     display: block;
     background-color: $c-black;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 3px solid #AAAAAA;
   }
 
   .current-score {
