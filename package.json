@@ -52,6 +52,7 @@
     "path-exists": "2.1.0",
     "postcss-loader": "1.0.0",
     "promise": "7.1.1",
+    "prop-types": "15.6.0",
     "react-addons-test-utils": "15.4.2",
     "react-dev-utils": "0.4.2",
     "react-test-renderer": "15.4.2",

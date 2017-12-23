@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {inject} from 'mobx-react';
 import {Form, Field, FormStore, Controls, Validators} from '../../Form';
 import loginApi from '../../../../api/loginApi';

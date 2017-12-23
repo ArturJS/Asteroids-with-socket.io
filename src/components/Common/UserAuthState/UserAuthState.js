@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {hashHistory} from 'react-router';
 import {inject, observer} from 'mobx-react';
 import loginApi from '../../../api/loginApi';
