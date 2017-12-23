@@ -4,10 +4,8 @@ import _ from 'lodash';
 import {inject} from 'mobx-react';
 
 import {rotatePoint} from './helpers';
-import renderAsteroid from './renderers/AsteroidRenderer';
-import renderBullet from './renderers/BulletRenderer';
-import renderShip from './renderers/ShipRenderer';
-import Particle from './entities/Particle';
+import {Particle} from './BaseRenderer/liveObjects';
+import {baseRenderer} from './BaseRenderer';
 import './BattleField.scss';
 
 const KEY = {
@@ -39,11 +37,12 @@ export default class BattleField extends Component {
       screen: {
         width: 900,
         height: 600,
-        ratio: window.devicePixelRatio || 1
+        ratio: window.devicePixelRatio || 1 // TODO: move out
       },
-      playerNames: [],
-      context: null
+      playerNames: []
     };
+
+    this.ctx = null;
 
     this.keys = {
       left: 0,
@@ -67,13 +66,15 @@ export default class BattleField extends Component {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('resize', this.handleResize);
 
-    const context = this.canvas.getContext('2d');
-    _trackTransforms(context);
-    this.setState({context});
+    const ctx = this.canvas.getContext('2d');
+    this.ctx = ctx;
+
+    _trackTransforms(ctx);
+
     this.updateCanvasSize();
 
     this.props.socket.on('updateBattleField', ({players, asteroids, explosions}) => {
-      let playerNames = players.map(({login, score, id}) => {
+      const playerNames = players.map(({login, score, id}) => {
         return {
           id,
           value: login,
@@ -121,8 +122,7 @@ export default class BattleField extends Component {
               };
             })
           };
-        }),
-        context
+        })
       });
     });
   }
@@ -152,7 +152,7 @@ export default class BattleField extends Component {
 
   // count of pixels in canvas from left top corner to (clientWidth / 2, clientHeight / 2) on canvas
   getBoundaryPoint = () => {
-    const ctx = this.state.context;
+    const {ctx} = this;
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
     const leftTopPoint = ctx.transformedPoint(0, 0);
@@ -165,7 +165,7 @@ export default class BattleField extends Component {
 
   zoomShip = (delta) => {
     const {scale, shipPos} = this;
-    const ctx = this.state.context;
+    const {ctx} = this;
 
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
@@ -200,7 +200,7 @@ export default class BattleField extends Component {
   };
 
   centerShip = () => {
-    const ctx = this.state.context;
+    const {ctx} = this;
     const {clientWidth, clientHeight} = this.canvas;
     const areaCenter = ctx.transformedPoint(clientWidth / 2, clientHeight / 2);
     const boundaryPoint = this.getBoundaryPoint();
@@ -232,10 +232,11 @@ export default class BattleField extends Component {
   };
 
   clearArea() {
-    const {context, screen} = this.state;
-    context.save();
-    context.scale(screen.ratio, screen.ratio);
-    context.clear();
+    const {screen} = this.state;
+    const {ctx} = this;
+    ctx.save();
+    ctx.scale(screen.ratio, screen.ratio);
+    ctx.clear();
   }
 
   createParticles(players) {
@@ -281,17 +282,17 @@ export default class BattleField extends Component {
   }
 
   update(battleFieldData) {
-    const {context} = this.state;
+    const {ctx} = this;
 
-    this.clearArea();
+    this.clearArea(); // TODO Check: Do we really need this?
 
-    this.updateParticles(battleFieldData);
+    // this.updateParticles(battleFieldData);
 
     _.each(battleFieldData.explosions, explosion => this.createExplosion(explosion));
 
     this.renderObjects(battleFieldData);
 
-    context.restore();
+    ctx.restore();
 
     this.centerShip();
 
@@ -321,24 +322,57 @@ export default class BattleField extends Component {
     _.remove(this.particles, particle => particle.delete);
   }
 
-  resetScale = () => {
+  resetScale = () => { // TODO: move to baseRenderer
     this.scale = 1;
-    const ctx = this.state.context;
+    const {ctx} = this;
     ctx.setTransform(1, 0, 0, 1, 0, 0); // it's necessary to properly reset transforms
     ctx.save();
     ctx.restore();
     this.canvas.focus();
   };
 
-  renderObjects({players, asteroids}) {
-    const {context} = this.state;
+  mapPlayersToEntities(players) { // TODO: move entities mapping on server side
+    const bulletEntities = [];
 
-    players.forEach(({number, ship, bullets}) => {
-      renderShip(ship, context, {number});
-      _.each(bullets, bullet => renderBullet(bullet, context));
+    const playerEntities = players.map(({
+                                          number,
+                                          ship,
+                                          bullets
+                                        }) => {
+      bulletEntities.push(
+        ...bullets.map(bullet => ({
+          type: 'Bullet',
+          data: bullet
+        }))
+      );
+
+      return {
+        type: 'Ship',
+        data: {
+          number,
+          ...ship
+        }
+      };
     });
 
-    _.each(asteroids, asteroid => renderAsteroid(asteroid, context));
+    return [...bulletEntities, ...playerEntities];
+  }
+
+  mapAsteroidsToEntities(asteroids) {
+    return asteroids.map(asteroid => ({
+      type: 'Asteroid',
+      data: asteroid
+    }));
+  }
+
+  renderObjects({players, asteroids}) {
+    const {ctx} = this;
+    const entitiesData = [
+      ...this.mapPlayersToEntities(players),
+      ...this.mapAsteroidsToEntities(asteroids)
+    ];
+
+    baseRenderer.renderAll(ctx, entitiesData);
   }
 
   render() {

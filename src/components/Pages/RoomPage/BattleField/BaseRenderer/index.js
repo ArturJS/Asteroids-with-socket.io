@@ -1,0 +1,1 @@
+export {baseRenderer} from './BaseRenderer';
