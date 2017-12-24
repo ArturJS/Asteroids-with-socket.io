@@ -13,13 +13,11 @@ export default class Asteroid {
     this.radius = args.size;
     this.score = (80 / this.radius) * 5;
     this.create = args.create;
-    this.addScore = args.addScore;
     this.vertices = asteroidVertices(8, args.size);
   }
 
   destroy() {
     this.delete = true;
-    this.addScore(this.score);
 
     // Explode
     for (let i = 0; i < this.radius; i++) {
@@ -48,8 +46,7 @@ export default class Asteroid {
             x: randomNumBetween(-10, 20) + this.position.x,
             y: randomNumBetween(-10, 20) + this.position.y
           },
-          create: this.create.bind(this),
-          addScore: this.addScore.bind(this)
+          create: this.create.bind(this)
         });
         this.create(asteroid, 'asteroids');
       }

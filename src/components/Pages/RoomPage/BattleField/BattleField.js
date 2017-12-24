@@ -264,7 +264,7 @@ export default class BattleField extends Component {
 
   createExplosion({position, radius}) {
     _.times(radius, () => {
-      this.particles.push(
+      baseRenderer.registerLiveObject(
         new Particle({
           lifeSpan: _.random(60, 100),
           size: _.random(1, 3),
@@ -282,8 +282,6 @@ export default class BattleField extends Component {
   }
 
   update(battleFieldData) {
-    const {ctx} = this;
-
     this.clearArea(); // TODO Check: Do we really need this?
 
     // this.updateParticles(battleFieldData);
@@ -291,8 +289,6 @@ export default class BattleField extends Component {
     _.each(battleFieldData.explosions, explosion => this.createExplosion(explosion));
 
     this.renderObjects(battleFieldData);
-
-    ctx.restore();
 
     this.centerShip();
 

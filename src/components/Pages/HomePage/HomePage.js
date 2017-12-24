@@ -44,6 +44,22 @@ export default class HomePage extends Component {
     return room.userId === userId;
   };
 
+  onRoomClick = (e) => {
+    const {roomId} = e.target.dataset;
+
+    this.goToRoom(roomId);
+  };
+
+  onRoomEnter = ({nativeEvent: e}) => {
+    const enterKeyCode = 13;
+
+    if (e.keyCode !== enterKeyCode) {
+      return;
+    }
+
+    this.onRoomClick(e);
+  };
+
   render() {
     const {rooms} = this.props.roomStore;
 
@@ -55,7 +71,13 @@ export default class HomePage extends Component {
           <CreateRoomForm />
           <ul className="rooms-list list-unstyled">
             {rooms.map(room => (
-              <li key={room.id} className="room-item" onClick={() => this.goToRoom(room.id)}>
+              <li
+                key={room.id}
+                className="room-item"
+                tabIndex="0"
+                data-room-id={room.id}
+                onKeyDown={this.onRoomEnter}
+                onClick={this.onRoomClick}>
                 <span className="room-name" title={room.name}>
                   {room.name}
                 </span>

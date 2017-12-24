@@ -39,16 +39,14 @@ export default class BattleFieldAutoplay extends Component {
 
     this.setState({context: context});
     this.startGame();
-    requestAnimationFrame(() => {
-      this.update()
-    });
-
+    this.renderNextFrame();
     this.initAutoplay();
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowResize);
     clearInterval(this.autoplayIntervalId);
+    cancelAnimationFrame(this.requestAnimationFrameId);
   }
 
   handleWindowResize = _.debounce(() => {
@@ -124,12 +122,13 @@ export default class BattleFieldAutoplay extends Component {
     context.restore();
 
     // Next frame
-    requestAnimationFrame(() => {
-      this.update()
-    });
+    this.renderNextFrame();
   }
 
-  addScore(points) {
+  renderNextFrame() {
+    this.requestAnimationFrameId = requestAnimationFrame(() => {
+      this.update();
+    });
   }
 
   startGame() {
@@ -153,8 +152,7 @@ export default class BattleFieldAutoplay extends Component {
   }
 
   generateAsteroids(howMany) {
-    let asteroids = [];
-    let ship = this.ship[0];
+    const ship = this.ship[0];
 
     for (let i = 0; i < howMany; i++) {
       let asteroid = new Asteroid({
@@ -163,8 +161,7 @@ export default class BattleFieldAutoplay extends Component {
           x: randomNumBetweenExcluding(0, this.state.screen.width, ship.position.x - 60, ship.position.x + 60),
           y: randomNumBetweenExcluding(0, this.state.screen.height, ship.position.y - 60, ship.position.y + 60)
         },
-        create: this.createObject.bind(this),
-        addScore: this.addScore.bind(this)
+        create: this.createObject.bind(this)
       });
       this.createObject(asteroid, 'asteroids');
     }
