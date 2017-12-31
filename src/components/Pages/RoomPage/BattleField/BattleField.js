@@ -2,6 +2,11 @@ import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import {inject} from 'mobx-react';
+import {
+  pure,
+  withState,
+  withHandlers
+} from 'recompose';
 
 import {rotatePoint} from './helpers';
 import {Particle} from './BaseRenderer/liveObjects';
@@ -23,55 +28,60 @@ const SCREEN = {
   height: 1200
 };
 
+const SCREEN_PIXEL_RATIO = window.devicePixelRatio || 1;
+
+@withState('screen', 'updateCanvasSize', {
+  width: window.innerWidth,
+  height: window.innerHeight - 40
+})
+@withState('playerNames', 'updatePlayerNames', [])
+@withHandlers({
+  handleResize: ({updateCanvasSize}) => _.throttle(() => {
+    updateCanvasSize({
+      width: window.innerWidth,
+      height: window.innerHeight - 40
+    });
+  }, 300)
+})
 @inject('userStore')
+@pure
 export default class BattleField extends Component {
   static propTypes = {
     socket: PropTypes.object.isRequired,
-    userStore: PropTypes.object.isRequired
+    screen: PropTypes.object.isRequired,
+    userStore: PropTypes.object.isRequired,
+    updatePlayerNames: PropTypes.func.isRequired,
+    handleResize: PropTypes.func.isRequired
   };
 
   constructor(props) {
     super(props);
 
-    this.state = {
-      screen: {
-        width: 900,
-        height: 600,
-        ratio: window.devicePixelRatio || 1 // TODO: move out
-      },
-      playerNames: []
-    };
-
     this.ctx = null;
-
-    this.keys = {
-      left: 0,
-      right: 0,
-      up: 0,
-      space: 0
-    };
 
     this.particles = [];
 
     this.scale = 1;
     this.shipPos = {x: 0, y: 0};
-
-    this.handleKeyUp = this.handleKeys.bind(this, false);
-    this.handleKeyDown = this.handleKeys.bind(this, true);
-    this.handleResize = _.debounce(this.updateCanvasSize, 300);
+    this.keys = {
+      left: false,
+      right: false,
+      up: false,
+      space: false
+    };
   }
 
   componentDidMount() {
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('keydown', this.handleKeyDown);
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('resize', this.props.handleResize);
 
     const ctx = this.canvas.getContext('2d');
     this.ctx = ctx;
 
     _trackTransforms(ctx);
 
-    this.updateCanvasSize();
+    this.props.handleResize();
 
     this.props.socket.on('updateBattleField', ({players, asteroids, explosions}) => {
       const playerNames = players.map(({login, score, id}) => {
@@ -130,15 +140,25 @@ export default class BattleField extends Component {
   componentWillUnmount() {
     window.removeEventListener('keyup', this.handleKeyUp);
     window.removeEventListener('keydown', this.handleKeyDown);
-    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('resize', this.props.handleResize);
   }
 
-  handleKeys(value, e) {
-    let {keys} = this;
-    if (e.keyCode === KEY.LEFT || e.keyCode === KEY.A) keys.left = value;
-    if (e.keyCode === KEY.RIGHT || e.keyCode === KEY.D) keys.right = value;
-    if (e.keyCode === KEY.UP || e.keyCode === KEY.W) keys.up = value;
-    if (e.keyCode === KEY.SPACE) keys.space = value;
+  handleKeyUp = (e) => {
+    this.handleKeys(false, e);
+  };
+
+  handleKeyDown = (e) => {
+    this.handleKeys(true, e);
+  };
+
+  handleKeys(isPressed, e) {
+    const {keys} = this;
+    const {keyCode} = e;
+
+    if (keyCode === KEY.LEFT || keyCode === KEY.A) keys.left = isPressed;
+    if (keyCode === KEY.RIGHT || keyCode === KEY.D) keys.right = isPressed;
+    if (keyCode === KEY.UP || keyCode === KEY.W) keys.up = isPressed;
+    if (keyCode === KEY.SPACE) keys.space = isPressed;
 
     this.props.socket.emit('keyUpdate', keys);
   }
@@ -232,7 +252,7 @@ export default class BattleField extends Component {
   };
 
   clearArea() {
-    const {screen} = this.state;
+    const {screen} = this.props;
     const {ctx} = this;
     ctx.save();
     ctx.scale(screen.ratio, screen.ratio);
@@ -282,7 +302,7 @@ export default class BattleField extends Component {
   }
 
   update(battleFieldData) {
-    this.clearArea(); // TODO Check: Do we really need this?
+    this.clearArea();
 
     // this.updateParticles(battleFieldData);
 
@@ -292,28 +312,16 @@ export default class BattleField extends Component {
 
     this.centerShip();
 
-    this.setState({
-      playerNames: battleFieldData.playerNames
-    });
+    this.props.updatePlayerNames(battleFieldData.playerNames);
 
     const {login} = this.props.userStore.getUserData();
     this.shipPos = _.find(battleFieldData.players, player => player.login === login).ship.position;
   }
 
-  updateCanvasSize = () => {
-    this.setState(({screen}) => ({
-      screen: {
-        ...screen,
-        width: window.innerWidth,
-        height: window.innerHeight - 40
-      }
-    }));
-  };
-
   updateParticles({players}) {
     this.createParticles(players);
 
-    _.each(this.particles, particle => particle.render(this.state));
+    _.each(this.particles, particle => particle.render(this.ctx));
 
     _.remove(this.particles, particle => particle.delete);
   }
@@ -372,8 +380,11 @@ export default class BattleField extends Component {
   }
 
   render() {
-    const {screen, playerNames} = this.state;
-    const {width, height, ratio} = screen;
+    const {
+      screen,
+      playerNames
+    } = this.props;
+    const {width, height} = screen;
 
     return (
       <div className="battle-field">
@@ -401,8 +412,8 @@ export default class BattleField extends Component {
           }}
           tabIndex="0"
           onWheel={this.handleZoom}
-          width={width * ratio}
-          height={height * ratio}/>
+          width={width * SCREEN_PIXEL_RATIO}
+          height={height * SCREEN_PIXEL_RATIO}/>
       </div>
     );
   }

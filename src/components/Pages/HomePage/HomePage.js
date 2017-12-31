@@ -45,7 +45,7 @@ export default class HomePage extends Component {
   };
 
   onRoomClick = (e) => {
-    const {roomId} = e.target.dataset;
+    const {roomId} = e.target.closest('[data-room-id]').dataset;
 
     this.goToRoom(roomId);
   };
