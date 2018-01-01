@@ -30,16 +30,19 @@ const SCREEN = {
 
 const SCREEN_PIXEL_RATIO = window.devicePixelRatio || 1;
 
-@withState('screen', 'updateCanvasSize', {
+const getActualCanvasSize = () => ({
   width: window.innerWidth,
   height: window.innerHeight - 40
+});
+
+@withState('screen', 'updateCanvasSize', {
+  ...getActualCanvasSize()
 })
 @withState('playerNames', 'updatePlayerNames', [])
 @withHandlers({
   handleResize: ({updateCanvasSize}) => _.throttle(() => {
     updateCanvasSize({
-      width: window.innerWidth,
-      height: window.innerHeight - 40
+      ...getActualCanvasSize()
     });
   }, 300)
 })
@@ -252,10 +255,9 @@ export default class BattleField extends Component {
   };
 
   clearArea() {
-    const {screen} = this.props;
     const {ctx} = this;
     ctx.save();
-    ctx.scale(screen.ratio, screen.ratio);
+    ctx.scale(SCREEN_PIXEL_RATIO, SCREEN_PIXEL_RATIO);
     ctx.clear();
   }
 
