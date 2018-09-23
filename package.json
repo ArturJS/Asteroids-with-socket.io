@@ -69,11 +69,14 @@
   },
   "dependencies": {
     "axios": "0.15.3",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-polyfill": "6.23.0",
+    "babel-register": "^6.26.0",
     "body-parser": "1.17.1",
     "classnames": "2.2.5",
     "concurrently": "3.4.0",
     "core-js": "2.4.1",
+    "cross-env": "^5.2.0",
     "es6-promise": "4.0.5",
     "express": "4.15.2",
     "font-awesome": "4.7.0",
@@ -94,11 +97,10 @@
     "socketio-jwt": "4.5.0"
   },
   "scripts": {
-    "start": "npm run node_api",
+    "start": "npx cross-env NODE_ENV=production node server/index.js",
+    "dev": "npx cross-env NODE_ENV=development node server/index.js",
     "ui-server": "node scripts/start.js",
-    "node_api": "node build-server/server.js",
     "build": "node scripts/build.js",
-    "build-server": "rimraf build-server && npm run flow-check && flow-remove-types server/ -d build-server/",
     "test": "node scripts/test.js --env=jsdom",
     "flow-check": "flow check"
   },
